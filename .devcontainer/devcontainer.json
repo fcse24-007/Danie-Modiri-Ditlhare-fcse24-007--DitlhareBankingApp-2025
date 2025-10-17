@@ -1,0 +1,30 @@
+{
+  "name": "Java (17)",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+    "version": "17",
+    "installMaven": "true",
+    "installGradle": "true"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "redhat.vscode-xml",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+  "customizations": {
+  "vscode": {
+    "extensions": [
+      "vscjava.vscode-java-pack",
+      "redhat.vscode-xml"
+    ]
+  }
+},
+  "postCreateCommand": "mvn clean install || true",
+  "remoteUser": "vscode"
+}
