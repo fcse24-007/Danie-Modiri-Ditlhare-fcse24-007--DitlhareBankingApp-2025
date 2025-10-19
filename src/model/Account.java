@@ -97,10 +97,13 @@ public class Account {
 
     @Override
     public String toString() {
-        return null;
-    }
-
-    public String getAccountID() {
-        return "";
+        return "Account{" +
+                "accountNumber='" + accountNumber + '\'' +
+                ", balance=" + balance +
+                ", dateCreated=" + dateCreated +
+                ", dateOpened=" + dateOpened +
+                ", customer=" + customer +
+                ", status=" + status +
+                '}';
     }
 }
