@@ -1,11 +1,14 @@
 {
-  "name": "Java (17)",
+  "name": "Java Banking System (Java 17 + MySQL)",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
-    "version": "17",
-    "installMaven": "true",
-    "installGradle": "true"
+      "version": "17",
+      "installMaven": "true",
+      "installGradle": "true"
+    },
+    "ghcr.io/devcontainers/features/mysql:1": {
+      "version": "8.0"
     }
   },
   "customizations": {
@@ -17,14 +20,12 @@
       ]
     }
   },
-  "customizations": {
-  "vscode": {
-    "extensions": [
-      "vscjava.vscode-java-pack",
-      "redhat.vscode-xml"
-    ]
-  }
-},
-  "postCreateCommand": "mvn clean install || true",
+  "postCreateCommand": "sudo service mysql start && mysql -u root -e \"CREATE DATABASE IF NOT EXISTS bankdb;\" && mvn clean install || true",
+  "forwardPorts": [3306],
+  "containerEnv": {
+    "DB_URL": "jdbc:mysql://localhost:3306/bankdb",
+    "DB_USER": "root",
+    "DB_PASS": ""
+  },
   "remoteUser": "vscode"
 }
