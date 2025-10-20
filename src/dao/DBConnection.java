@@ -3,29 +3,57 @@ package dao;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
+import java.io.InputStream;
+import java.util.Properties;
 
 public class DBConnection {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/ditlharebankdb";
-    private static final String USER = "root";
-    private static final String PASSWORD = "password";
     private static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-
     private static DBConnection instance = null;
-    private Connection connection;
+
+    // Environment-based configuration
+    private String url;
+    private String username;
+    private String password;
 
     private DBConnection() {
+        loadConfiguration();
         try {
             Class.forName(DRIVER_CLASS);
-            this.connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Database connection established successfully.");
+            System.out.println("MySQL JDBC Driver loaded successfully.");
         } catch (ClassNotFoundException e) {
             System.err.println("JDBC Driver not found.");
             e.printStackTrace();
-        } catch (SQLException e) {
-            System.err.println("Error connecting to the database. Check your URL, user, password, and ensure MySQL is running.");
-            e.printStackTrace();
+        }
+    }
+
+    private void loadConfiguration() {
+        try {
+            // Try to load from environment variables first (Codespaces/Production)
+            this.url = System.getenv("DB_URL");
+            this.username = System.getenv("DB_USERNAME");
+            this.password = System.getenv("DB_PASSWORD");
+
+            // If environment variables not set, use local defaults
+            if (this.url == null) {
+                this.url = "jdbc:mysql://localhost:3306/bankdb";
+            }
+            if (this.username == null) {
+                this.username = "root";
+            }
+            if (this.password == null) {
+                this.password = "";
+            }
+
+            System.out.println("✓ Database configuration loaded:");
+            System.out.println("  URL: " + this.url);
+            System.out.println("  User: " + this.username);
+
+        } catch (Exception e) {
+            System.err.println("✗ Error loading database configuration, using defaults");
+            this.url = "jdbc:mysql://localhost:3306/bankdb";
+            this.username = "root";
+            this.password = "";
         }
     }
 
@@ -36,35 +64,33 @@ public class DBConnection {
         return instance;
     }
 
-    /**
-     * Returns the active Connection object, attempting to re-establish if necessary.
-     * @return The active JDBC Connection.
-     */
     public Connection getConnection() {
         try {
-            if (connection == null || connection.isClosed()) {
-                System.out.println("Attempting to re-establish database connection...");
-                instance = new DBConnection();
-            }
+            // Use environment variables with fallbacks
+            String url = System.getenv("DB_URL");
+            String username = System.getenv("DB_USERNAME");
+            String password = System.getenv("DB_PASSWORD");
+
+            if (url == null) url = "jdbc:mysql://localhost:3306/bankdb";
+            if (username == null) username = "root";
+            if (password == null) password = "";
+
+            Connection connection = DriverManager.getConnection(url, username, password);
+            System.out.println("✓ Database connection established to: " + url);
+            return connection;
         } catch (SQLException e) {
-            System.err.println("Error validating database connection status.");
-            e.printStackTrace();
+            System.err.println("✗ Error creating database connection");
+            System.err.println("  URL: " + System.getenv("DB_URL"));
+            System.err.println("  Error: " + e.getMessage());
+            return null;
         }
-        return connection;
     }
 
-    /**
-     * Safely closes the database connection.
-     */
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Database connection closed.");
-            }
+    public boolean isConnected() {
+        try (Connection testConn = getConnection()) {
+            return testConn != null && !testConn.isClosed();
         } catch (SQLException e) {
-            System.err.println("Error closing the database connection.");
-            e.printStackTrace();
+            return false;
         }
     }
 }

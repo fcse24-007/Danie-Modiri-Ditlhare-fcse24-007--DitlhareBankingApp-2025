@@ -1,14 +1,13 @@
-# Base image with Linux
-FROM mcr.microsoft.com/devcontainers/base:ubuntu
+FROM mcr.microsoft.com/devcontainers/java:1-21
 
-# Install Java, Maven, and Gradle
-RUN apt-get update && \
-    apt-get install -y openjdk-17-jdk maven gradle && \
-    apt-get clean
+# Install additional packages
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+    mysql-client \
+    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
-# Set Java environment variables
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-ENV PATH=$JAVA_HOME/bin:$PATH
+# Create workspace directory
+RUN mkdir -p /workspace && chown -R vscode:vscode /workspace
 
-# Default user
-USER vscode
+# Set working directory
+WORKDIR /workspace

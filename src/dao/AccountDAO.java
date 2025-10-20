@@ -1,24 +1,19 @@
 package dao;
 
 import model.*;
-import dao.DBConnection;
-
 import java.sql.*;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountDAO implements BaseDAO<Account, String> {
 
-    // Assumes you have a way to fetch a Customer object given a customer_id
     private final CustomerDAO customerDAO = new CustomerDAO();
 
     @Override
     public Account findById(String accountNumber) {
         String sql = "SELECT a.*, c.customer_id FROM accounts a " +
-                "JOIN customers c ON a.customer_id = c.customer_id " + // Join to get Customer ID
+                "JOIN customers c ON a.customer_id = c.customer_id " +
                 "WHERE a.account_number = ?";
-
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -29,6 +24,7 @@ public class AccountDAO implements BaseDAO<Account, String> {
                 }
             }
         } catch (SQLException e) {
+            System.err.println("Error finding account by ID: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -36,25 +32,61 @@ public class AccountDAO implements BaseDAO<Account, String> {
 
     @Override
     public List<Account> findAll() {
-        return List.of();
+        List<Account> accounts = new ArrayList<>();
+        String sql = "SELECT a.*, c.customer_id FROM accounts a " +
+                "JOIN customers c ON a.customer_id = c.customer_id";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                accounts.add(extractAccountFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error finding all accounts: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return accounts;
     }
 
     @Override
-    public boolean update(Account entity) {
+    public boolean update(Account account) {
+        String sql = "UPDATE accounts SET balance = ?, status = ?, customer_id = ? WHERE account_number = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setDouble(1, account.getBalance());
+            stmt.setString(2, account.getStatus().name());
+            stmt.setString(3, account.getCustomer().getCustomerId());
+            stmt.setString(4, account.getAccountNumber());
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating account: " + e.getMessage());
+            e.printStackTrace();
+        }
         return false;
     }
 
     @Override
-    public boolean delete(String s) {
+    public boolean delete(String accountNumber) {
+        String sql = "DELETE FROM accounts WHERE account_number = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, accountNumber);
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("Error deleting account: " + e.getMessage());
+            e.printStackTrace();
+        }
         return false;
     }
-
-    // --- Core Implementations ---
 
     @Override
     public Account save(Account account) {
-        // Simplified SQL for the base Account table. Subtype fields (like interestRate)
-        // would require separate tables/updates.
         String sql = "INSERT INTO accounts (account_number, balance, date_created, date_opened, status, customer_id, account_type) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getInstance().getConnection();
@@ -62,26 +94,65 @@ public class AccountDAO implements BaseDAO<Account, String> {
 
             stmt.setString(1, account.getAccountNumber());
             stmt.setDouble(2, account.getBalance());
-            // Map LocalDate to SQL Date
             stmt.setDate(3, Date.valueOf(account.getDateCreated()));
             stmt.setDate(4, Date.valueOf(account.getDateOpened()));
             stmt.setString(5, account.getStatus().name());
             stmt.setString(6, account.getCustomer().getCustomerId());
-
-            // Determine the AccountType to save in the DB
-            String type = getAccountType(account);
-            stmt.setString(7, type);
+            stmt.setString(7, getAccountType(account));
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
-                // You would need to call a subtype DAO (e.g., SavingsAccountDAO) to save
-                // any specific fields (like InterestRate) here.
                 return account;
             }
         } catch (SQLException e) {
+            System.err.println("Error saving account: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Find accounts by customer ID
+     */
+    public List<Account> findAccountsByCustomerId(String customerId) {
+        List<Account> accounts = new ArrayList<>();
+        String sql = "SELECT a.*, c.customer_id FROM accounts a " +
+                "JOIN customers c ON a.customer_id = c.customer_id " +
+                "WHERE a.customer_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, customerId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    accounts.add(extractAccountFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error finding accounts by customer ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return accounts;
+    }
+
+    /**
+     * Update account balance
+     */
+    public boolean updateBalance(String accountNumber, double newBalance) {
+        String sql = "UPDATE accounts SET balance = ? WHERE account_number = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setDouble(1, newBalance);
+            stmt.setString(2, accountNumber);
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating account balance: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
     }
 
     // Helper to determine the concrete type
@@ -92,21 +163,15 @@ public class AccountDAO implements BaseDAO<Account, String> {
         return "UNKNOWN";
     }
 
-    // Helper method to map a database row to the correct Account object
     private Account extractAccountFromResultSet(ResultSet rs) throws SQLException {
-        // Fetch the associated Customer (requires CustomerDAO)
         Customer customer = customerDAO.findById(rs.getString("customer_id"));
-
         AccountStatus status = AccountStatus.valueOf(rs.getString("status"));
 
-        // Convert SQL Date to Java LocalDate
         java.sql.Date sqlDateCreated = rs.getDate("date_created");
         java.sql.Date sqlDateOpened = rs.getDate("date_opened");
 
         String accountType = rs.getString("account_type");
 
-        // Logic to instantiate the correct subtype based on the stored type
-        // In a complete system, you would fetch subtype-specific fields here.
         switch (AccountType.valueOf(accountType)) {
             case SAVINGS:
                 return new SavingsAccount(
@@ -115,7 +180,6 @@ public class AccountDAO implements BaseDAO<Account, String> {
                         sqlDateCreated.toLocalDate(),
                         sqlDateOpened.toLocalDate(),
                         customer, status
-                        // + fetch interestRate from a SAVINGS_ACCOUNT table
                 );
             case INVESTMENT:
                 return new InvestmentAccount(
@@ -124,7 +188,6 @@ public class AccountDAO implements BaseDAO<Account, String> {
                         sqlDateCreated.toLocalDate(),
                         sqlDateOpened.toLocalDate(),
                         customer, status
-                        // + fetch interestRate from an INVESTMENT_ACCOUNT table
                 );
             case CHEQUE:
                 return new ChequeAccount(
@@ -133,10 +196,9 @@ public class AccountDAO implements BaseDAO<Account, String> {
                         sqlDateCreated.toLocalDate(),
                         sqlDateOpened.toLocalDate(),
                         customer, status,
-                        "N/A", "N/A", false // + fetch employer details from a CHEQUE_ACCOUNT table
+                        "N/A", "N/A", false
                 );
             default:
-                // Return the base Account object if no subtype matches
                 return new Account(
                         rs.getString("account_number"),
                         rs.getDouble("balance"),
@@ -146,6 +208,4 @@ public class AccountDAO implements BaseDAO<Account, String> {
                 );
         }
     }
-
-    // ... findAll, update, delete methods follow the same pattern ...
 }

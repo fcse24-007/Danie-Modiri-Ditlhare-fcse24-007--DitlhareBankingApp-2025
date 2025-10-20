@@ -1,31 +1,56 @@
 {
-  "name": "Java Banking System (Java 17 + MySQL)",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "name": "Java Banking System (Java 21 + MySQL)",
+  "image": "mcr.microsoft.com/devcontainers/java:1-21",
   "features": {
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "17",
-      "installMaven": "true",
-      "installGradle": "true"
-    },
     "ghcr.io/devcontainers/features/mysql:1": {
-      "version": "8.0"
-    }
+      "version": "8.0",
+      "rootPassword": "",
+      "startupConfig": "CREATE DATABASE IF NOT EXISTS bankdb;"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "customizations": {
     "vscode": {
       "extensions": [
         "vscjava.vscode-java-pack",
         "redhat.vscode-xml",
-        "eamodio.gitlens"
-      ]
+        "vscjava.vscode-maven",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-java-test",
+        "eamodio.gitlens",
+        "ms-mssql.mssql"
+      ],
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "java.compile.nullAnalysis.mode": "automatic",
+        "maven.executable.path": "/usr/local/sdkman/candidates/maven/current/bin/mvn"
+      }
     }
   },
-  "postCreateCommand": "sudo service mysql start && mysql -u root -e \"CREATE DATABASE IF NOT EXISTS bankdb;\" && mvn clean install || true",
-  "forwardPorts": [3306],
-  "containerEnv": {
-    "DB_URL": "jdbc:mysql://localhost:3306/bankdb",
-    "DB_USER": "root",
-    "DB_PASS": ""
+  "postCreateCommand": "sudo service mysql start && sleep 10 && mysql -u root -e \"CREATE DATABASE IF NOT EXISTS bankdb; GRANT ALL PRIVILEGES ON bankdb.* TO 'root'@'localhost'; FLUSH PRIVILEGES;\" && mvn clean compile -q",
+  "postStartCommand": "sudo service mysql restart && sleep 5",
+  "forwardPorts": [3306, 8080],
+  "portsAttributes": {
+    "3306": {
+      "label": "MySQL Database",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Web Application",
+      "onAutoForward": "notify"
+    }
   },
+  "remoteEnv": {
+    "DB_URL": "jdbc:mysql://localhost:3306/bankdb",
+    "DB_USERNAME": "root",
+    "DB_PASSWORD": "",
+    "JAVA_HOME": "/usr/local/sdkman/candidates/java/21.0.1-tem",
+    "M2_HOME": "/usr/local/sdkman/candidates/maven/current"
+  },
+  "mounts": [
+    "source=/var/lib/mysql,target=/var/lib/mysql,type=volume"
+  ],
+  "updateRemoteUserUID": true,
   "remoteUser": "vscode"
 }
