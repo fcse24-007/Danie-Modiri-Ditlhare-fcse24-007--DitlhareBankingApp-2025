@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toolchains>
+  <toolchain>
+    <type>jdk</type>
+    <provides>
+      <version>17</version>
+      <vendor>any</vendor>
+    </provides>
+    <configuration>
+      <jdkHome>/usr/local/sdkman/candidates/java/17.0.16-ms</jdkHome>
+    </configuration>
+  </toolchain>
+</toolchains>
