@@ -1,5 +1,6 @@
 {
   "java.project.sourcePaths": [
+    "src/main",
     "src"
   ],
   "java.configuration.runtimes": [
@@ -8,8 +9,5 @@
       "path": "/usr/local/sdkman/candidates/java/17.0.16-ms"
     }
   ],
-  "java.configuration.checkProjectSettingsExclusions": false
-}
-{
-    "java.configuration.updateBuildConfiguration": "automatic"
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
