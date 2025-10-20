@@ -32,6 +32,11 @@
     </dependencies>
 
     <build>
+       <!-- Project uses a non-standard source layout (sources under `src/`),
+           configure Maven to pick up sources from there so IDEs and Codespaces
+           can compile and run the project without moving files. -->
+       <sourceDirectory>${project.basedir}/src</sourceDirectory>
+       <testSourceDirectory>${project.basedir}/test</testSourceDirectory>
         <plugins>
             <!-- Compiler plugin for Java 17 -->
             <plugin>

@@ -1,0 +1,15 @@
+{
+  "java.project.sourcePaths": [
+    "src"
+  ],
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-17",
+      "path": "/usr/local/sdkman/candidates/java/17.0.16-ms"
+    }
+  ],
+  "java.configuration.checkProjectSettingsExclusions": false
+}
+{
+    "java.configuration.updateBuildConfiguration": "automatic"
+}
