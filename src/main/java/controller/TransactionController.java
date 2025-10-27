@@ -16,18 +16,10 @@ public class TransactionController implements TransactionProcessing {
         this.auditDAO = new AuditDAO();
     }
 
-    /**
-     * Matches the deposit sequence diagram exactly:
-     * 1. enterDepositDetails(accountNumber, amount) [from UI]
-     * 2. validateInput(accountNumber, amount) : boolean [self-call in UI]
-     * 3. processDeposit(accountNumber, amount) [to controller]
-     * 4. getAccount(accountNumber) 
-     * 5. return account
-     */
     public DepositResult processDeposit(String accountNumber, double amount, String userId) {
         System.out.println("TransactionController: Processing deposit for account " + accountNumber + ", amount: " + amount);
         
-        // Step 2: Validate input (simulated - in real UI this would be in the View)
+        // Step 2: Validate input 
         if (!validateInput(accountNumber, amount)) {
             System.out.println("TransactionController: Input validation failed");
             return new DepositResult(false, 0, "Invalid input parameters", "");
@@ -46,17 +38,17 @@ public class TransactionController implements TransactionProcessing {
 
             Account account = accountOpt.get();
             
-            // Step 6-7: Get current balance
+            // Get current balance
             double currentBalance = account.getBalance();
             System.out.println("TransactionController: Current balance: " + currentBalance);
             
-            // Step 8-9: Process deposit
+            //  Process deposit
             account.deposit(amount);
             
             // Update account balance in database
             accountDAO.updateBalance(accountNumber, account.getBalance());
             
-            // Step 10-11: Create and record transaction
+            // Create and record transaction
             String transactionId = "TXN_" + System.currentTimeMillis();
             Transaction transaction = new Transaction(
                 transactionId, 
@@ -72,11 +64,11 @@ public class TransactionController implements TransactionProcessing {
                 String.format("Deposit of %.2f to account %s. Transaction: %s", 
                     amount, accountNumber, transactionId));
             
-            // Step 12-13: Get new balance
+            // Get new balance
             double newBalance = account.getBalance();
             System.out.println("TransactionController: New balance: " + newBalance);
             
-            // Step 14-15: Return success
+            // Return success
             System.out.println("TransactionController: Deposit SUCCESS - Transaction: " + transactionId);
             return new DepositResult(true, newBalance, 
                 "Deposit processed successfully", transactionId);
