@@ -1,4 +1,3 @@
-// UserDAOImpl.java
 package database;
 
 import model.User;
