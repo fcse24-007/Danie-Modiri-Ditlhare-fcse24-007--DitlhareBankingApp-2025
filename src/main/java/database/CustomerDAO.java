@@ -1,4 +1,3 @@
-// CustomerDAOImpl.java
 package database;
 
 import model.Customer;
