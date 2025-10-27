@@ -79,7 +79,7 @@ public class BankEmployee extends User implements TransactionProcessing {
     }
 
     public void manageCustomer(Customer customer) {
-        // Implementation for managing customer - could include various operations
+        // Implementation for managing customer
         if (customer != null) {
             customer.recordAudit(Action.ACCOUNT_UPDATED, 
                 "Customer managed by employee: " + employeeId);
