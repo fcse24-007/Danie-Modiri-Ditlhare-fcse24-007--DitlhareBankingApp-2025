@@ -1,12 +1,11 @@
-// SavingsAccount.java - ENHANCED VERSION
 package model;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 public class SavingsAccount extends Account implements InterestBearing {
-    private double interestRate = 0.025; // 2.5% annual interest rate
+    private double interestRate = 0.025;
     private LocalDate lastInterestApplied;
-    private double minimumBalance = 100.0; // Minimum balance requirement
+    private double minimumBalance = 500.0; // Minimum balance requirement
 
     public SavingsAccount(String accountNumber, double balance, LocalDate dateCreated,
                           LocalDate dateOpened, Customer customer, AccountStatus status) {
