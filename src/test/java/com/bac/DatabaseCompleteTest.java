@@ -1,4 +1,4 @@
-// DatabaseCompleteTest.java - SIMPLIFIED WORKING VERSION
+// DatabaseCompleteTest.java
 package com.bac;
 
 import database.*;
