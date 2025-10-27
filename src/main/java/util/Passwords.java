@@ -5,10 +5,9 @@ import de.mkammerer.argon2.Argon2Factory;
 
 public class Passwords {
 
-    // You can tune these values for performance vs. security.
-    private static final int ITERATIONS = 3;       // Number of iterations
-    private static final int MEMORY = 65536;       // Memory cost in KiB (64 MB)
-    private static final int PARALLELISM = 1;      // Threads
+    private static final int ITERATIONS = 3;      
+    private static final int MEMORY = 65536;       
+    private static final int PARALLELISM = 1;     
 
     public static String hashPassword(String password) {
         Argon2 argon2 = Argon2Factory.create();
