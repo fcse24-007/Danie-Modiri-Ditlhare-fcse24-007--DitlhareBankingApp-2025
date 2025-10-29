@@ -150,7 +150,6 @@ public final class DatabaseConnection {
             )
             """;
 
-        // Execute them using a single Statement inside try-with-resources
         try (Statement stmt = conn.createStatement()) {
             stmt.execute(createUsersTable);
             stmt.execute(createCustomersTable);
@@ -265,32 +264,24 @@ public final class DatabaseConnection {
         }
     }
 
-    /**
-     * Enable important pragmas on given connection.
-     */
     private static void enablePragmas(Connection conn) {
         try (Statement stmt = conn.createStatement()) {
-            // enforce foreign key constraints on SQLite
+            // enforces foreign key constraints on SQLite
             stmt.execute("PRAGMA foreign_keys = ON");
-            // recommended for WAL mode in multi-process dev environments; optional
-            // stmt.execute("PRAGMA journal_mode = WAL");
         } catch (SQLException e) {
-            // Do not hide the problem silently — propagate up if needed, but here log
             System.err.println("Warning: failed to set PRAGMA: " + e.getMessage());
         }
     }
 
     /**
-     * Ensure the data directory exists and return the full DB file path.
+     * Ensures the data directory exists and return the full DB file path.
      */
     private static String determineDbPath() {
-        // If the env var DB_FILE is set, use it directly (absolute or relative)
         String env = System.getenv("DB_FILE");
         if (env != null && !env.isBlank()) {
             return env;
         }
 
-        // Otherwise use ./data/banking_system.db inside the project
         Path dataDir = Path.of(System.getProperty("user.dir")).resolve(DEFAULT_DB_DIR);
         try {
             if (!Files.exists(dataDir)) {
