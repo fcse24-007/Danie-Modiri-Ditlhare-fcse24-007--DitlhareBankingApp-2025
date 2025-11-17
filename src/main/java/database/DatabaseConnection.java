@@ -8,34 +8,22 @@ import java.nio.file.Path;
 import java.sql.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * DatabaseConnection - SQLite helper for the banking_system project.
- *
- * Designed for Codespaces / dev containers:
- * - Stores DB file under ./data/banking_system.db (workspace relative)
- * - Creates the data dir if missing
- * - Ensures foreign keys are enabled for each connection
- * - Initializes schema + seed data inside a transaction
- */
 public final class DatabaseConnection {
 
-    // Default relative path inside your project workspace (Codespaces-friendly)
     private static final String DEFAULT_DB_DIR = "data";
     private static final String DEFAULT_DB_FILE = "banking_system.db";
 
-    // Use env var DB_FILE to override, or fallback to ./data/banking_system.db
     private static final String DB_FILE_PATH = determineDbPath();
 
     // JDBC URL for SQLite
     private static final String JDBC_URL = "jdbc:sqlite:" + DB_FILE_PATH;
 
-    // Singleton connection (reuse where appropriate)
+    // Singleton connection 
     private static Connection connection;
 
-    // Ensure initializeDatabaseInternal runs only once per JVM
     private static final AtomicBoolean initialized = new AtomicBoolean(false);
 
-    private DatabaseConnection() { /* no instantiation */ }
+    private DatabaseConnection() { }
 
     public static synchronized Connection getConnection() {
         try {
@@ -57,16 +45,12 @@ public final class DatabaseConnection {
     }
 
     /**
-     * Public trigger for initialization (useful in Codespaces startup tasks)
+     * Public trigger for initialization
      */
     public static void initializeDatabase() {
-        // calling getConnection() will call initializeDatabaseInternal once
         getConnection();
     }
 
-    /**
-     * Internal initialization that opens its own connection to avoid recursion
-     */
     private static void initializeDatabaseInternal() {
         System.out.println("Initializing database (internal)...");
         try (Connection conn = DriverManager.getConnection(JDBC_URL)) {
@@ -166,7 +150,6 @@ public final class DatabaseConnection {
             )
             """;
 
-        // Execute them using a single Statement inside try-with-resources
         try (Statement stmt = conn.createStatement()) {
             stmt.execute(createUsersTable);
             stmt.execute(createCustomersTable);
@@ -180,7 +163,7 @@ public final class DatabaseConnection {
     }
 
     /**
-     * Insert initial data if missing. Uses parameterized statements and INSERT OR IGNORE.
+     * Insert initial data if missing.
      */
     private static void seedInitialData(Connection conn) throws SQLException {
         // Check if admin already exists
@@ -204,7 +187,6 @@ public final class DatabaseConnection {
             }
         }
 
-        // Create admin with auto-generated format
         String insertAdminSql = """
             INSERT INTO users (user_id, username, password, role)
             VALUES (?, ?, ?, ?)
@@ -282,32 +264,24 @@ public final class DatabaseConnection {
         }
     }
 
-    /**
-     * Enable important pragmas on given connection.
-     */
     private static void enablePragmas(Connection conn) {
         try (Statement stmt = conn.createStatement()) {
-            // enforce foreign key constraints on SQLite
+            // enforces foreign key constraints on SQLite
             stmt.execute("PRAGMA foreign_keys = ON");
-            // recommended for WAL mode in multi-process dev environments; optional
-            // stmt.execute("PRAGMA journal_mode = WAL");
         } catch (SQLException e) {
-            // Do not hide the problem silently — propagate up if needed, but here log
             System.err.println("Warning: failed to set PRAGMA: " + e.getMessage());
         }
     }
 
     /**
-     * Ensure the data directory exists and return the full DB file path.
+     * Ensures the data directory exists and return the full DB file path.
      */
     private static String determineDbPath() {
-        // If the env var DB_FILE is set, use it directly (absolute or relative)
         String env = System.getenv("DB_FILE");
         if (env != null && !env.isBlank()) {
             return env;
         }
 
-        // Otherwise use ./data/banking_system.db inside the project
         Path dataDir = Path.of(System.getProperty("user.dir")).resolve(DEFAULT_DB_DIR);
         try {
             if (!Files.exists(dataDir)) {
@@ -322,7 +296,7 @@ public final class DatabaseConnection {
     }
 
     /**
-     * Close singleton connection (useful for tests / orderly shutdown).
+     * Close singleton connection.
      */
     public static synchronized void closeConnection() {
         try {

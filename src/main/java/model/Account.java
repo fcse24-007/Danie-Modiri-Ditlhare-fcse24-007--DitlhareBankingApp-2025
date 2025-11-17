@@ -77,11 +77,10 @@ public class Account {
     }
 
     public double calculateInterest() {
-        // Base implementation - overridden in specific account types
+        // Base implementation
         return 0.0;
     }
 
-    // In Account.java - Add transaction integrity (RA-003)
     public void transferTo(Account targetAccount, double amount) {
         if (targetAccount == null) {
             throw new IllegalArgumentException("Target account cannot be null");
@@ -101,7 +100,6 @@ public class Account {
             // Deposit to target
             targetAccount.deposit(amount);
             
-            // If we reach here, transaction is successful
             System.out.println("Transfer completed successfully");
             
         } catch (Exception e) {

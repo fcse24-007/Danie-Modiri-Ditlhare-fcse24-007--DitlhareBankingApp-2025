@@ -347,8 +347,7 @@ public class BankEmployeeDashboard {
             });
         });
 
-        // Refresh accounts action - FIXED VERSION
-        // Refresh accounts action - FIXED VERSION
+        // Refresh accounts action
         refreshButton.setOnAction(e -> {
             try {
                 // Use AccountDAO to load all accounts from database
@@ -477,12 +476,6 @@ public class BankEmployeeDashboard {
 
         Label statusLabel = new Label();
 
-        /**
-         * Matches Deposit Sequence Diagram exactly:
-         * 1. enterDepositDetails(accountNumber, amount)
-         * 2. validateInput(accountNumber, amount)
-         * 3. processDeposit(accountNumber, amount)
-         */
         processDepositButton.setOnAction(e -> {
             String accountNumber = accountNumberField.getText().trim();
             String amountText = amountField.getText().trim();

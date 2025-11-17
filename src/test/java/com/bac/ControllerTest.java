@@ -15,10 +15,10 @@ public class ControllerTest {
             // Initialize database
             DatabaseConnection.getConnection();
             
-            // Test Authentication Controller (Matches Login Sequence Diagram)
+            // Test Authentication Controller
             testAuthenticationController();
             
-            // Test Transaction Controller (Matches Deposit Sequence Diagram)  
+            // Test Transaction Controller 
             testTransactionController();
             
             // Test Bank Employee Controller

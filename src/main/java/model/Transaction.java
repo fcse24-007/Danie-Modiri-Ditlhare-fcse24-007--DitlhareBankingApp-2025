@@ -34,7 +34,6 @@ public class Transaction implements Auditable {
     }
 
     public void recordTransaction() {
-        // In a real system, this would persist the transaction to a database
         System.out.println("Recording transaction: " + this);
         
         // Record audit trail

@@ -1,4 +1,3 @@
-// TransactionDAOImpl.java - FIXED VERSION
 package database;
 
 import model.*;

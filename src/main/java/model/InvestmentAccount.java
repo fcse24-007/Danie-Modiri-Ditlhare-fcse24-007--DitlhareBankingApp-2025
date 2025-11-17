@@ -1,10 +1,9 @@
-// InvestmentAccount.java - ENHANCED VERSION
 package model;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 public class InvestmentAccount extends Account implements InterestBearing {
-    private double interestRate = 0.065; // 6.5% annual interest rate - higher than savings
+    private double interestRate = 0.065; 
     private static final double MINIMUM_INITIAL_DEPOSIT = 1000.00;
     private static final double MINIMUM_BALANCE = 500.00;
     private LocalDate lastInterestApplied;
@@ -68,7 +67,6 @@ public class InvestmentAccount extends Account implements InterestBearing {
                     MINIMUM_BALANCE));
         }
         
-        // 30-day notice period simulation (for some investment accounts)
         if (ChronoUnit.DAYS.between(getDateOpened(), LocalDate.now()) < 30) {
             throw new IllegalArgumentException(
                 "Investment accounts require 30-day notice for withdrawals");

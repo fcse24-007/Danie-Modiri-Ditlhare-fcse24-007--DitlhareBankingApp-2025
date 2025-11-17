@@ -1,4 +1,3 @@
-// AccountDAOImpl.java - FIXED VERSION
 package database;
 
 import model.*;

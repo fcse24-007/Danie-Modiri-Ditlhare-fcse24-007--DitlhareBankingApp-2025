@@ -14,13 +14,7 @@ public class AuthenticationController {
         this.auditDAO = new AuditDAO();
     }
 
-    /**
-     * Matches the login sequence diagram exactly:
-     * 1. enterCredentials(username, password) [from UI]
-     * 2. login(username, password) [to controller]
-     * 3. authenticate(username, password) : boolean
-     * 4. return authResult : boolean
-     */
+    
     public LoginResult login(String username, String password) {
         System.out.println("AuthenticationController: Processing login for " + username);
         
@@ -72,7 +66,7 @@ public class AuthenticationController {
         return currentUser != null;
     }
 
-    // Helper class for login results that matches sequence diagram
+    // Helper class for login results
     public static class LoginResult {
         private final boolean success;
         private final UserRole role;

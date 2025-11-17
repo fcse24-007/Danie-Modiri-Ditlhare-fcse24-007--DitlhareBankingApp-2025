@@ -1,4 +1,3 @@
-// AuditDAOImpl.java
 package database;
 
 import model.AuditEntry;
