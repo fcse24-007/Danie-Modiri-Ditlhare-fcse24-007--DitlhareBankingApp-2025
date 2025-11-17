@@ -53,34 +53,8 @@ public class SavingsAccount extends Account implements InterestBearing {
 
     @Override
     public void withdraw(double amount) {
-        // Savings account withdrawal restrictions (AM-002 enhancement)
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Withdrawal amount must be positive");
-        }
-        
-        if (getStatus() != AccountStatus.ACTIVE) {
-            throw new IllegalStateException("Cannot withdraw from inactive account");
-        }
-        
-        if (getBalance() - amount < minimumBalance) {
-            throw new IllegalArgumentException(
-                String.format("Withdrawal would bring balance below minimum requirement of $%.2f", 
-                    minimumBalance));
-        }
-        
-        if (amount > 1000) { // Daily withdrawal limit
-            throw new IllegalArgumentException("Daily withdrawal limit exceeded for savings account");
-        }
-        
-        // Process withdrawal
-        super.withdraw(amount);
-        
-        // Record specific savings account withdrawal
-        if (getCustomer() != null) {
-            getCustomer().recordAudit(Action.WITHDRAWAL, 
-                String.format("Savings account withdrawal: $%.2f from account %s", 
-                    amount, getAccountNumber()));
-        }
+        // Savings accounts do not allow withdrawals - only transfers are permitted
+        throw new IllegalStateException("Withdrawals are not permitted from savings accounts. Use transfers instead.");
     }
 
     // Getters and Setters

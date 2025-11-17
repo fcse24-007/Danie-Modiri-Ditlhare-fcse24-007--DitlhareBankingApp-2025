@@ -149,18 +149,57 @@ public class AccountDAO implements DAO<Account> {
     @Override
     public boolean update(Account account) {
         String sql = """
-            UPDATE accounts SET balance = ?, date_created = ?, date_opened = ?, 
+            UPDATE accounts SET balance = ?, date_created = ?, date_opened = ?,
                                customer_id = ?, status = ?, account_type = ?, interest_rate = ?,
                                employer_name = ?, employer_address = ?, employment_status = ?
             WHERE account_number = ?
         """;
-        
+
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            setAccountParameters(stmt, account);
+
+            // Set parameters in the correct order for UPDATE
+            stmt.setDouble(1, account.getBalance());
+            stmt.setDate(2, Date.valueOf(account.getDateCreated()));
+            stmt.setDate(3, Date.valueOf(account.getDateOpened()));
+            stmt.setString(4, account.getCustomer().getCustomerId());
+            stmt.setString(5, account.getStatus().toString());
+
+            // Determine account type and set specific fields
+            if (account instanceof SavingsAccount) {
+                SavingsAccount sa = (SavingsAccount) account;
+                stmt.setString(6, "SAVINGS");
+                stmt.setDouble(7, sa.getInterestRate());
+                stmt.setNull(8, Types.VARCHAR);
+                stmt.setNull(9, Types.VARCHAR);
+                stmt.setNull(10, Types.BOOLEAN);
+
+            } else if (account instanceof InvestmentAccount) {
+                InvestmentAccount ia = (InvestmentAccount) account;
+                stmt.setString(6, "INVESTMENT");
+                stmt.setDouble(7, ia.getInterestRate());
+                stmt.setNull(8, Types.VARCHAR);
+                stmt.setNull(9, Types.VARCHAR);
+                stmt.setNull(10, Types.BOOLEAN);
+
+            } else if (account instanceof ChequeAccount) {
+                ChequeAccount ca = (ChequeAccount) account;
+                stmt.setString(6, "CHEQUE");
+                stmt.setNull(7, Types.DOUBLE);
+                stmt.setString(8, ca.getEmployerName());
+                stmt.setString(9, ca.getEmployerAddress());
+                stmt.setBoolean(10, ca.isEmploymentStatus());
+
+            } else {
+                stmt.setString(6, "SAVINGS"); // Default
+                stmt.setNull(7, Types.DOUBLE);
+                stmt.setNull(8, Types.VARCHAR);
+                stmt.setNull(9, Types.VARCHAR);
+                stmt.setNull(10, Types.BOOLEAN);
+            }
+
             stmt.setString(11, account.getAccountNumber());
-            
+
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error updating account: " + e.getMessage());

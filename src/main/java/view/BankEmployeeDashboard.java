@@ -388,6 +388,13 @@ public class BankEmployeeDashboard {
                 return;
             }
 
+            // Check if selected account is a SavingsAccount - withdrawals not allowed
+            if (selectedAccount instanceof model.SavingsAccount) {
+                statusLabel.setText("Withdrawals are not permitted from savings accounts. Use transfers instead.");
+                statusLabel.setStyle("-fx-text-fill: #dc3545;");
+                return;
+            }
+
             // Create withdrawal dialog
             TextInputDialog dialog = new TextInputDialog("0.00");
             dialog.setTitle("Process Withdrawal");
@@ -411,13 +418,13 @@ public class BankEmployeeDashboard {
 
                     // Process withdrawal using TransactionController
                     transactionController.processWithdrawal(selectedAccount, amount);
-                    
+
                     statusLabel.setText(String.format("Withdrawal of $%.2f processed successfully", amount));
                     statusLabel.setStyle("-fx-text-fill: #28a745;");
-                    
+
                     // Refresh the table to show updated balance
                     refreshButton.fire();
-                    
+
                 } catch (NumberFormatException ex) {
                     statusLabel.setText("Please enter a valid amount");
                     statusLabel.setStyle("-fx-text-fill: #dc3545;");
