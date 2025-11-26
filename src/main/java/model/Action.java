@@ -1,0 +1,16 @@
+package model;
+
+public enum Action {
+    LOGIN,
+    LOGOUT,
+    ACCOUNT_CREATED,
+    ACCOUNT_UPDATED,
+    ACCOUNT_CLOSED,
+    DEPOSIT,
+    WITHDRAWAL,
+    TRANSFER,
+    PROFILE_UPDATED,
+    PASSWORD_RESET,
+    STATUS_CHANGED,
+    USER_ROLE_CHANGED
+}

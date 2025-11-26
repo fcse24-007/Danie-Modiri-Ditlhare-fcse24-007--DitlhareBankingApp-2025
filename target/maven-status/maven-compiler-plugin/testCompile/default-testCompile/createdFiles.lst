@@ -1,0 +1,4 @@
+com\bac\ControllerTest.class
+com\bac\DatabaseCompleteTest.class
+com\bac\TransactionControllerTest.class
+com\bac\AccountTypesTest.class
