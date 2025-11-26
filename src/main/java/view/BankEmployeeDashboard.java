@@ -20,6 +20,7 @@ import model.Account;
 import model.User;
 import service.IDGeneratorService;
 import database.AccountDAO;
+import util.Passwords;
 
 public class BankEmployeeDashboard {
     private Stage stage;
@@ -100,6 +101,8 @@ public class BankEmployeeDashboard {
 
         TextField usernameField = new TextField();
         usernameField.setPromptText("Enter username");
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Enter password");
         TextField firstNameField = new TextField();
         firstNameField.setPromptText("Enter first name");
         TextField surnameField = new TextField();
@@ -117,6 +120,8 @@ public class BankEmployeeDashboard {
         int row = 0;
         formGrid.add(new Label("Username:"), 0, row);
         formGrid.add(usernameField, 1, row++);
+        formGrid.add(new Label("Password:"), 0, row);
+        formGrid.add(passwordField, 1, row++);
         formGrid.add(new Label("First Name:"), 0, row);
         formGrid.add(firstNameField, 1, row++);
         formGrid.add(new Label("Surname:"), 0, row);
@@ -140,11 +145,22 @@ public class BankEmployeeDashboard {
 
                 String customerId = idGenerator.generateCustomerId();
                 String userId = idGenerator.generateCustomerUserId();
+                
+                // Get password - if empty, generate a strong temporary password and show it to the employee
+                String rawPasswordInput = passwordField.getText();
+                String password;
+                boolean generatedTemp = false;
+                if (rawPasswordInput == null || rawPasswordInput.trim().isEmpty()) {
+                    password = Passwords.generateTemporaryPassword();
+                    generatedTemp = true;
+                } else {
+                    password = rawPasswordInput.trim();
+                }
 
                 var customer = employeeController.createCustomer(
                     userId,
                     usernameField.getText(),
-                    null,  // password set to null - will be reset by admin
+                    password,
                     customerId,
                     firstNameField.getText(),
                     surnameField.getText(),
@@ -155,13 +171,15 @@ public class BankEmployeeDashboard {
                     currentUser.getUserId()
                 );
 
-                statusLabel.setText(String.format(
-                    "Customer created successfully! Customer ID: %s, User ID: %s",
-                    customerId, userId
-                ));
+                String message = "Customer created successfully! Customer ID: " + customerId + ", User ID: " + userId;
+                if (generatedTemp) {
+                    message += "\nTemporary password: " + password + " (share with customer or reset via admin)";
+                }
+                
+                statusLabel.setText(message);
                 statusLabel.setStyle("-fx-text-fill: #28a745;");
 
-                clearFormFields(usernameField, firstNameField,
+                clearFormFields(usernameField, passwordField, firstNameField,
                         surnameField, addressField, phoneField, emailField);
 
             } catch (Exception ex) {

@@ -41,7 +41,10 @@ public class User {
     }
 
     private String generateTemporaryPassword() {
-        return "Temp" + System.currentTimeMillis() % 10000;
+        // Generate a strong temporary password: Temp{timestamp}!@
+        // Example: Temp1234567890!@
+        long timestamp = System.currentTimeMillis() % 1000000;
+        return "Temp" + timestamp + "!@";
     }
 
     public boolean changePassword(String oldPassword, String newPassword) {
@@ -80,7 +83,13 @@ public class User {
     }
 
     public void setPassword(String password) {
-        if (password == null || password.length() < 8) {
+        if (password == null || password.trim().isEmpty()) {
+            // Generate temporary password if none provided
+            this.password = Passwords.hashPassword(generateTemporaryPassword());
+            return;
+        }
+        
+        if (password.length() < 8) {
             throw new IllegalArgumentException("Password must be at least 8 characters long");
         }
     
