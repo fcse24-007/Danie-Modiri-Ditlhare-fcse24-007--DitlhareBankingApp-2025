@@ -1,8 +1,8 @@
 # DitlhareBankingApp
 
-A comprehensive banking system application built with Java, demonstrating Object-Oriented Analysis and Development principles. This OOAD assignment (FCSE24-007) implements a full-featured banking platform with user authentication, transaction management, and role-based access control.
+A comprehensive banking system application built with Java, demonstrating Object-Oriented Analysis and Development principles. This OOAD assignment implements a full-featured banking platform with user authentication, transaction management, and role-based access control.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -23,31 +23,31 @@ DitlhareBankingApp is a Java-based banking system developed as part of the 2025 
 
 ## Features
 
-### 🔐 Authentication & Authorization
+### Authentication & Authorization
 - Secure login system with Argon2 password hashing
 - Role-based access control (Customer, Bank Employee, System Administrator)
 - User session management
 
-### 💼 Customer Features
+### Customer Features
 - Account management (create, view, close accounts)
 - Multiple account types (Savings, Cheque, Investment)
 - Transaction history and tracking
 - Balance inquiries
 - Interest-bearing account support
 
-### 👨‍💼 Bank Employee Features
+### Bank Employee Features
 - Customer management and lookup
 - Account administration
 - Transaction verification and processing
 - Customer update functionality
 
-### 🛡️ System Administrator Features
+### System Administrator Features
 - User and employee management
 - System-wide audit logging
 - Administrative dashboard
 - System configuration
 
-### 📊 Advanced Capabilities
+### Advanced Capabilities
 - Multiple account types with specific behaviors
 - Transaction processing and validation
 - Interest calculation for savings accounts
