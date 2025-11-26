@@ -100,8 +100,6 @@ public class BankEmployeeDashboard {
 
         TextField usernameField = new TextField();
         usernameField.setPromptText("Enter username");
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Enter password");
         TextField firstNameField = new TextField();
         firstNameField.setPromptText("Enter first name");
         TextField surnameField = new TextField();
@@ -119,8 +117,6 @@ public class BankEmployeeDashboard {
         int row = 0;
         formGrid.add(new Label("Username:"), 0, row);
         formGrid.add(usernameField, 1, row++);
-        formGrid.add(new Label("Password:"), 0, row);
-        formGrid.add(passwordField, 1, row++);
         formGrid.add(new Label("First Name:"), 0, row);
         formGrid.add(firstNameField, 1, row++);
         formGrid.add(new Label("Surname:"), 0, row);
@@ -148,7 +144,7 @@ public class BankEmployeeDashboard {
                 var customer = employeeController.createCustomer(
                     userId,
                     usernameField.getText(),
-                    passwordField.getText(),
+                    null,  // password set to null - will be reset by admin
                     customerId,
                     firstNameField.getText(),
                     surnameField.getText(),
@@ -165,7 +161,7 @@ public class BankEmployeeDashboard {
                 ));
                 statusLabel.setStyle("-fx-text-fill: #28a745;");
 
-                clearFormFields(usernameField, passwordField, firstNameField,
+                clearFormFields(usernameField, firstNameField,
                         surnameField, addressField, phoneField, emailField);
 
             } catch (Exception ex) {
