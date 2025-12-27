@@ -38,7 +38,7 @@ public class BankEmployeeDashboard {
 
     private void initializeUI() {
         stage.setTitle("Bank Employee Dashboard - Banking System");
-        
+
         // Create tab pane for different functionalities
         TabPane tabPane = new TabPane();
 
@@ -67,21 +67,39 @@ public class BankEmployeeDashboard {
         // Main layout
         VBox mainLayout = new VBox(10);
         mainLayout.setPadding(new Insets(15));
-        
+
         // Header
         Label headerLabel = new Label("Bank Employee Dashboard");
-        headerLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-        
+        headerLabel.getStyleClass().add("header-label");
+
         // User info and logout button
         Button logoutButton = new Button("Logout");
-        logoutButton.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white;");
+        logoutButton.getStyleClass().addAll("button", "button-danger");
         logoutButton.setOnAction(e -> logout());
 
         // Fix for duplicate children: Remove repeated additions
         mainLayout.getChildren().clear();
         mainLayout.getChildren().addAll(headerLabel, logoutButton, tabPane);
 
-        Scene scene = new Scene(mainLayout, 900, 700);
+        mainLayout.getStyleClass().add("root");
+        mainLayout.getStyleClass().add("main-container");
+
+        // Wrap main layout in a ScrollPane
+        ScrollPane scrollPane = new ScrollPane(mainLayout);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(false);
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+
+        Scene scene = new Scene(scrollPane, 900, 700);
+
+        // Load CSS
+        try {
+            String cssPath = getClass().getResource("/styles/styles.css").toExternalForm();
+            scene.getStylesheets().add(cssPath);
+        } catch (Exception e) {
+            System.err.println("Error loading CSS: " + e.getMessage());
+        }
+
         stage.setScene(scene);
     }
 
@@ -91,8 +109,9 @@ public class BankEmployeeDashboard {
 
         // Section: Create New Customer
         VBox createCustomerSection = new VBox(10);
+        createCustomerSection.getStyleClass().add("card");
         Label createTitleLabel = new Label("Create New Customer");
-        createTitleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        createTitleLabel.getStyleClass().add("sub-header-label");
 
         GridPane formGrid = new GridPane();
         formGrid.setHgap(15);
@@ -136,7 +155,7 @@ public class BankEmployeeDashboard {
         formGrid.add(customerTypeCombo, 1, row++);
 
         Button createCustomerButton = new Button("Create Customer");
-        createCustomerButton.setStyle("-fx-background-color: #28a745; -fx-text-fill: white;");
+        createCustomerButton.getStyleClass().addAll("button", "button-success");
         Label statusLabel = new Label();
 
         createCustomerButton.setOnAction(e -> {
@@ -145,8 +164,9 @@ public class BankEmployeeDashboard {
 
                 String customerId = idGenerator.generateCustomerId();
                 String userId = idGenerator.generateCustomerUserId();
-                
-                // Get password - if empty, generate a strong temporary password and show it to the employee
+
+                // Get password - if empty, generate a strong temporary password and show it to
+                // the employee
                 String rawPasswordInput = passwordField.getText();
                 String password;
                 boolean generatedTemp = false;
@@ -158,26 +178,26 @@ public class BankEmployeeDashboard {
                 }
 
                 var customer = employeeController.createCustomer(
-                    userId,
-                    usernameField.getText(),
-                    password,
-                    customerId,
-                    firstNameField.getText(),
-                    surnameField.getText(),
-                    addressField.getText(),
-                    phoneField.getText(),
-                    emailField.getText(),
-                    model.CustomerType.valueOf(customerTypeCombo.getValue()),
-                    currentUser.getUserId()
-                );
+                        userId,
+                        usernameField.getText(),
+                        password,
+                        customerId,
+                        firstNameField.getText(),
+                        surnameField.getText(),
+                        addressField.getText(),
+                        phoneField.getText(),
+                        emailField.getText(),
+                        model.CustomerType.valueOf(customerTypeCombo.getValue()),
+                        currentUser.getUserId());
 
                 String message = "Customer created successfully! Customer ID: " + customerId + ", User ID: " + userId;
                 if (generatedTemp) {
                     message += "\nTemporary password: " + password + " (share with customer or reset via admin)";
                 }
-                
+
                 statusLabel.setText(message);
-                statusLabel.setStyle("-fx-text-fill: #28a745;");
+                statusLabel.getStyleClass().removeAll("status-label-error");
+                statusLabel.getStyleClass().add("status-label-success");
 
                 clearFormFields(usernameField, passwordField, firstNameField,
                         surnameField, addressField, phoneField, emailField);
@@ -192,14 +212,16 @@ public class BankEmployeeDashboard {
 
         // Section: Delete Customer
         VBox deleteCustomerSection = new VBox(10);
+        deleteCustomerSection.getStyleClass().add("card");
         Label deleteLabel = new Label("Delete Customer Profile");
-        deleteLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #dc3545;");
+        deleteLabel.getStyleClass().add("sub-header-label");
+        deleteLabel.setStyle("-fx-text-fill: #dc3545;"); // Keep red color for danger
 
         TextField customerIdToDeleteField = new TextField();
         customerIdToDeleteField.setPromptText("Enter Customer ID to delete");
 
         Button deleteCustomerButton = new Button("Delete Customer");
-        deleteCustomerButton.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white;");
+        deleteCustomerButton.getStyleClass().addAll("button", "button-danger");
         Label deleteStatusLabel = new Label();
 
         deleteCustomerButton.setOnAction(e -> {
@@ -213,7 +235,8 @@ public class BankEmployeeDashboard {
             try {
                 database.AccountDAO accountDAO = new database.AccountDAO();
                 List<model.Account> accounts = accountDAO.findByCustomerId(customerId);
-                boolean allClosed = accounts.stream().allMatch(a -> a.getBalance() == 0 && "CLOSED".equalsIgnoreCase(a.getStatus().toString()));
+                boolean allClosed = accounts.stream()
+                        .allMatch(a -> a.getBalance() == 0 && "CLOSED".equalsIgnoreCase(a.getStatus().toString()));
 
                 if (!allClosed) {
                     deleteStatusLabel.setText("Customer has open accounts. Close all accounts before deletion.");
@@ -231,11 +254,13 @@ public class BankEmployeeDashboard {
                         boolean success = employeeController.deleteCustomerById(customerId);
                         if (success) {
                             deleteStatusLabel.setText("Customer deleted successfully.");
-                            deleteStatusLabel.setStyle("-fx-text-fill: #28a745;");
+                            deleteStatusLabel.getStyleClass().removeAll("status-label-error");
+                            deleteStatusLabel.getStyleClass().add("status-label-success");
                             customerIdToDeleteField.clear();
                         } else {
                             deleteStatusLabel.setText("Failed to delete customer.");
-                            deleteStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                            deleteStatusLabel.getStyleClass().removeAll("status-label-success");
+                            deleteStatusLabel.getStyleClass().add("status-label-error");
                         }
                     }
                 });
@@ -245,7 +270,8 @@ public class BankEmployeeDashboard {
             }
         });
 
-        deleteCustomerSection.getChildren().addAll(deleteLabel, customerIdToDeleteField, deleteCustomerButton, deleteStatusLabel);
+        deleteCustomerSection.getChildren().addAll(deleteLabel, customerIdToDeleteField, deleteCustomerButton,
+                deleteStatusLabel);
 
         // Add sections to main tab content
         tabContent.getChildren().addAll(createCustomerSection, deleteCustomerSection);
@@ -264,65 +290,67 @@ public class BankEmployeeDashboard {
         VBox formBox = new VBox(10);
         TextField customerIdField = new TextField();
         customerIdField.setPromptText("Enter Customer ID");
-        
+
         ComboBox<String> accountTypeCombo = new ComboBox<>();
         accountTypeCombo.getItems().addAll("SAVINGS", "CHEQUE", "INVESTMENT");
         accountTypeCombo.setValue("SAVINGS");
-        
+
         TextField initialDepositField = new TextField();
         initialDepositField.setPromptText("Enter initial deposit amount");
 
         Button openAccountButton = new Button("Open Account");
-        openAccountButton.setStyle("-fx-background-color: #17a2b8; -fx-text-fill: white;");
+        openAccountButton.getStyleClass().addAll("button", "button-secondary");
 
         // Accounts table for viewing and closing accounts
         Label accountsLabel = new Label("Existing Accounts");
         accountsLabel.setStyle("-fx-font-weight: bold;");
-        
+
         TableView<Account> accountsTable = new TableView<>();
-        
+
         TableColumn<Account, String> accNumberCol = new TableColumn<>("Account Number");
         accNumberCol.setCellValueFactory(new PropertyValueFactory<>("accountNumber"));
-        
+
         TableColumn<Account, String> typeCol = new TableColumn<>("Type");
-        typeCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Account, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<Account, String> param) {
-                Account account = param.getValue();
-                String accountType = account.getClass().getSimpleName();
-                switch (accountType) {
-                    case "SavingsAccount":
-                        return new javafx.beans.property.SimpleStringProperty("SAVINGS ACCOUNT");
-                    case "InvestmentAccount":
-                        return new javafx.beans.property.SimpleStringProperty("INVESTMENT ACCOUNT");
-                    case "ChequeAccount":
-                        return new javafx.beans.property.SimpleStringProperty("CHEQUE ACCOUNT");
-                    default:
-                        return new javafx.beans.property.SimpleStringProperty(accountType);
-                }
-            }
-        });
-        
+        typeCol.setCellValueFactory(
+                new Callback<TableColumn.CellDataFeatures<Account, String>, ObservableValue<String>>() {
+                    @Override
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Account, String> param) {
+                        Account account = param.getValue();
+                        String accountType = account.getClass().getSimpleName();
+                        switch (accountType) {
+                            case "SavingsAccount":
+                                return new javafx.beans.property.SimpleStringProperty("SAVINGS ACCOUNT");
+                            case "InvestmentAccount":
+                                return new javafx.beans.property.SimpleStringProperty("INVESTMENT ACCOUNT");
+                            case "ChequeAccount":
+                                return new javafx.beans.property.SimpleStringProperty("CHEQUE ACCOUNT");
+                            default:
+                                return new javafx.beans.property.SimpleStringProperty(accountType);
+                        }
+                    }
+                });
+
         TableColumn<Account, Double> balanceCol = new TableColumn<>("Balance");
         balanceCol.setCellValueFactory(new PropertyValueFactory<>("balance"));
-        
+
         TableColumn<Account, String> statusCol = new TableColumn<>("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        
+
         TableColumn<Account, String> customerCol = new TableColumn<>("Customer ID");
-        customerCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Account, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<Account, String> param) {
-                Account account = param.getValue();
-                return new javafx.beans.property.SimpleStringProperty(account.getCustomer().getCustomerId());
-            }
-        });
-        
+        customerCol.setCellValueFactory(
+                new Callback<TableColumn.CellDataFeatures<Account, String>, ObservableValue<String>>() {
+                    @Override
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Account, String> param) {
+                        Account account = param.getValue();
+                        return new javafx.beans.property.SimpleStringProperty(account.getCustomer().getCustomerId());
+                    }
+                });
+
         accountsTable.getColumns().addAll(accNumberCol, typeCol, balanceCol, statusCol, customerCol);
 
         // Refresh button for accounts table
         Button refreshButton = new Button("Refresh Accounts");
-        refreshButton.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white;");
+        refreshButton.getStyleClass().addAll("button", "button-secondary");
 
         // Close account button
         Button closeAccountButton = new Button("Close Selected Account");
@@ -356,7 +384,7 @@ public class BankEmployeeDashboard {
                 // Look up the actual customer from the database
                 database.CustomerDAO customerDAO = new database.CustomerDAO();
                 var customerOpt = customerDAO.findById(customerId);
-                
+
                 if (customerOpt.isEmpty()) {
                     statusLabel.setText("Customer not found with ID: " + customerId);
                     statusLabel.setStyle("-fx-text-fill: #dc3545;");
@@ -365,72 +393,70 @@ public class BankEmployeeDashboard {
 
                 var customer = customerOpt.get();
                 model.AccountType accountType = model.AccountType.valueOf(accountTypeCombo.getValue());
-                
+
                 // If opening CHEQUE account, show employment details dialog
                 if (accountType == model.AccountType.CHEQUE) {
                     // Create employment details dialog
                     VBox employmentBox = new VBox(10);
                     employmentBox.setPadding(new Insets(10));
-                    
+
                     TextField employerNameField = new TextField();
                     employerNameField.setPromptText("Employer Name");
-                    
+
                     TextField employerAddressField = new TextField();
                     employerAddressField.setPromptText("Employer Address");
-                    
+
                     CheckBox employmentStatusCheckBox = new CheckBox("Currently Employed");
                     employmentStatusCheckBox.setSelected(true);
-                    
+
                     employmentBox.getChildren().addAll(
-                        new Label("Employer Name:"), employerNameField,
-                        new Label("Employer Address:"), employerAddressField,
-                        employmentStatusCheckBox
-                    );
-                    
+                            new Label("Employer Name:"), employerNameField,
+                            new Label("Employer Address:"), employerAddressField,
+                            employmentStatusCheckBox);
+
                     Dialog<ButtonType> employmentDialog = new Dialog<>();
                     employmentDialog.setTitle("Employment Details");
                     employmentDialog.setHeaderText("Please provide employment details for cheque account");
                     employmentDialog.getDialogPane().setContent(employmentBox);
                     employmentDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-                    
+
                     Optional<ButtonType> result = employmentDialog.showAndWait();
-                    
+
                     if (result.isEmpty() || result.get() != ButtonType.OK) {
                         statusLabel.setText("Account creation cancelled - employment details not provided");
                         statusLabel.setStyle("-fx-text-fill: #dc3545;");
                         return;
                     }
-                    
+
                     // Create cheque account with employment details
                     String employerName = employerNameField.getText().trim();
                     String employerAddress = employerAddressField.getText().trim();
                     boolean employmentStatus = employmentStatusCheckBox.isSelected();
-                    
+
                     if (employerName.isEmpty() || employerAddress.isEmpty()) {
                         statusLabel.setText("Please fill in all employment details");
                         statusLabel.setStyle("-fx-text-fill: #dc3545;");
                         return;
                     }
-                    
+
                     // Call special method for cheque account creation
                     var account = employeeController.openChequeAccount(
-                        customer, initialDeposit, employerName, employerAddress, 
-                        employmentStatus, currentUser.getUserId()
-                    );
-                    
+                            customer, initialDeposit, employerName, employerAddress,
+                            employmentStatus, currentUser.getUserId());
+
                     statusLabel.setText("Cheque account opened successfully: " + account.getAccountNumber());
                     statusLabel.setStyle("-fx-text-fill: #28a745;");
                 } else {
                     // Regular account opening for SAVINGS and INVESTMENT
                     var account = employeeController.openAccount(
-                        customer,
-                        accountType,
-                        initialDeposit,
-                        currentUser.getUserId()
-                    );
-                    
+                            customer,
+                            accountType,
+                            initialDeposit,
+                            currentUser.getUserId());
+
                     statusLabel.setText("Account opened successfully: " + account.getAccountNumber());
-                    statusLabel.setStyle("-fx-text-fill: #28a745;");
+                    statusLabel.getStyleClass().removeAll("status-label-error");
+                    statusLabel.getStyleClass().add("status-label-success");
                 }
 
                 // Clear form and refresh table
@@ -461,13 +487,13 @@ public class BankEmployeeDashboard {
             confirmation.setTitle("Close Account");
             confirmation.setHeaderText("Close Account: " + selectedAccount.getAccountNumber());
             confirmation.setContentText("Are you sure you want to close this account?");
-            
+
             confirmation.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     try {
                         boolean success = employeeController.closeAccount(
-                            selectedAccount.getAccountNumber(), currentUser.getUserId());
-                        
+                                selectedAccount.getAccountNumber(), currentUser.getUserId());
+
                         if (success) {
                             statusLabel.setText("Account closed successfully");
                             statusLabel.setStyle("-fx-text-fill: #28a745;");
@@ -490,22 +516,22 @@ public class BankEmployeeDashboard {
                 // Use AccountDAO to load all accounts from database
                 database.AccountDAO accountDAO = new database.AccountDAO();
                 List<Account> accounts = accountDAO.findAll();
-                
+
                 ObservableList<Account> observableList = FXCollections.observableArrayList(accounts);
                 accountsTable.setItems(observableList);
 
                 statusLabel.setText("Loaded " + accounts.size() + " accounts");
                 statusLabel.setStyle("-fx-text-fill: #28a745;");
-                
+
                 // Enhanced debug output
                 System.out.println("=== ACCOUNTS DEBUG INFO ===");
                 System.out.println("Refreshed accounts table with " + accounts.size() + " accounts:");
                 for (Account account : accounts) {
-                    System.out.println(" - " + account.getAccountNumber() + 
-                        ": Balance P" + account.getBalance() + 
-                        " (" + account.getStatus() + ")" +
-                        " Customer: " + account.getCustomer().getCustomerId() +
-                        " Type: " + account.getClass().getSimpleName());
+                    System.out.println(" - " + account.getAccountNumber() +
+                            ": Balance P" + account.getBalance() +
+                            " (" + account.getStatus() + ")" +
+                            " Customer: " + account.getCustomer().getCustomerId() +
+                            " Type: " + account.getClass().getSimpleName());
                 }
                 System.out.println("=== END DEBUG INFO ===");
             } catch (Exception ex) {
@@ -577,14 +603,13 @@ public class BankEmployeeDashboard {
 
         // Add all components to form
         formBox.getChildren().addAll(
-            new Label("Customer ID:"), customerIdField,
-            new Label("Account Type:"), accountTypeCombo,
-            new Label("Initial Deposit:"), initialDepositField,
-            buttonBox,
-            accountsLabel,
-            accountsTable,
-            statusLabel
-        );
+                new Label("Customer ID:"), customerIdField,
+                new Label("Account Type:"), accountTypeCombo,
+                new Label("Initial Deposit:"), initialDepositField,
+                buttonBox,
+                accountsLabel,
+                accountsTable,
+                statusLabel);
 
         // Load initial data
         refreshButton.fire();
@@ -604,12 +629,12 @@ public class BankEmployeeDashboard {
         VBox formBox = new VBox(10);
         TextField accountNumberField = new TextField();
         accountNumberField.setPromptText("Enter Account Number");
-        
+
         TextField amountField = new TextField();
         amountField.setPromptText("Enter deposit amount");
 
         Button processDepositButton = new Button("Process Deposit");
-        processDepositButton.setStyle("-fx-background-color: #007bff; -fx-text-fill: white;");
+        processDepositButton.getStyleClass().addAll("button", "button-primary");
 
         Label statusLabel = new Label();
 
@@ -626,7 +651,7 @@ public class BankEmployeeDashboard {
 
             try {
                 double amount = Double.parseDouble(amountText);
-                
+
                 if (amount <= 0) {
                     statusLabel.setText("Amount must be positive");
                     statusLabel.setStyle("-fx-text-fill: #dc3545;");
@@ -635,16 +660,15 @@ public class BankEmployeeDashboard {
 
                 // Step 3: Process deposit
                 var result = employeeController.processDepositForCustomer(
-                    accountNumber, amount, currentUser.getUserId()
-                );
+                        accountNumber, amount, currentUser.getUserId());
 
                 if (result.isSuccess()) {
                     statusLabel.setText(String.format(
-                        "Deposit successful! New balance: P%.2f, Transaction: %s",
-                        result.getNewBalance(), result.getTransactionId()
-                    ));
-                    statusLabel.setStyle("-fx-text-fill: #28a745;");
-                    
+                            "Deposit successful! New balance: P%.2f, Transaction: %s",
+                            result.getNewBalance(), result.getTransactionId()));
+                    statusLabel.getStyleClass().removeAll("status-label-error");
+                    statusLabel.getStyleClass().add("status-label-success");
+
                     // Clear form
                     accountNumberField.clear();
                     amountField.clear();
@@ -663,10 +687,9 @@ public class BankEmployeeDashboard {
         });
 
         formBox.getChildren().addAll(
-            new Label("Account Number:"), accountNumberField,
-            new Label("Amount:"), amountField,
-            processDepositButton, statusLabel
-        );
+                new Label("Account Number:"), accountNumberField,
+                new Label("Amount:"), amountField,
+                processDepositButton, statusLabel);
 
         tabContent.getChildren().addAll(titleLabel, formBox);
         return tabContent;
@@ -683,7 +706,7 @@ public class BankEmployeeDashboard {
         tabContent.setPadding(new Insets(20));
 
         Label titleLabel = new Label("Update Customer Information");
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        titleLabel.getStyleClass().add("sub-header-label");
 
         // Search field for customer ID or username
         TextField searchField = new TextField();
@@ -697,7 +720,7 @@ public class BankEmployeeDashboard {
         formGrid.setHgap(15);
         formGrid.setVgap(10);
         formGrid.setPadding(new Insets(10));
-        formGrid.setVisible(false);  // Hidden initially until a customer is found
+        formGrid.setVisible(false); // Hidden initially until a customer is found
 
         TextField userIdField = new TextField();
         userIdField.setEditable(false); // User ID should not be editable
@@ -800,17 +823,16 @@ public class BankEmployeeDashboard {
                 // Update customer using employeeController
                 model.CustomerType customerType = model.CustomerType.valueOf(customerTypeStr);
                 boolean updateSuccess = employeeController.updateCustomer(
-                    userId,
-                    username,
-                    password,  // pass null password here to prevent update
-                    firstName,
-                    surname,
-                    address,
-                    phone,
-                    email,
-                    customerType,
-                    currentUser.getUserId()
-                );
+                        userId,
+                        username,
+                        password, // pass null password here to prevent update
+                        firstName,
+                        surname,
+                        address,
+                        phone,
+                        email,
+                        customerType,
+                        currentUser.getUserId());
 
                 if (updateSuccess) {
                     statusLabel.setText("Customer updated successfully");

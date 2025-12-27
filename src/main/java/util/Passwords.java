@@ -45,9 +45,6 @@ public class Passwords {
     }
 
     public static String generateTemporaryPassword() {
-        // Create a predictable-but-strong temporary password that meets
-        // the `isStrongPassword` requirements: contains uppercase, lowercase,
-        // digits and special characters.
         long timestamp = System.currentTimeMillis() % 1000000L;
         // Example: Temp123456Aa1!
         return "Temp" + timestamp + "Aa1!";

@@ -44,7 +44,7 @@ public class AdminDashboard {
 
     private void initializeUI() {
         stage.setTitle("Administrator Dashboard - Banking System");
-        
+
         // Create tab pane for different functionalities
         TabPane tabPane = new TabPane();
 
@@ -67,18 +67,20 @@ public class AdminDashboard {
 
         // Main layout
         VBox mainLayout = new VBox(10);
-        mainLayout.setPadding(new Insets(15));
-        
+        mainLayout.getStyleClass().add("root");
+        mainLayout.getStyleClass().add("main-container");
+
         // Header
         Label headerLabel = new Label("Administrator Dashboard");
-        headerLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-        
+        headerLabel.getStyleClass().add("header-label");
+
         // User info
         Label userInfoLabel = new Label("Logged in as: " + currentUser.getUsername() + " (Administrator)");
-        
+        userInfoLabel.getStyleClass().add("sub-header-label");
+
         // Logout button
         Button logoutButton = new Button("Logout");
-        logoutButton.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white;");
+        logoutButton.getStyleClass().addAll("button", "button-danger");
         logoutButton.setOnAction(e -> logout());
 
         HBox headerBox = new HBox(20);
@@ -87,7 +89,22 @@ public class AdminDashboard {
 
         mainLayout.getChildren().addAll(headerBox, tabPane);
 
-        Scene scene = new Scene(mainLayout, 1000, 700);
+        // Wrap main layout in a ScrollPane
+        ScrollPane scrollPane = new ScrollPane(mainLayout);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(false); // Allow height to fit if possible, but scroll if needed
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;"); // Ensure it blends in
+
+        Scene scene = new Scene(scrollPane, 1000, 700);
+
+        // Load CSS
+        try {
+            String cssPath = getClass().getResource("/styles/styles.css").toExternalForm();
+            scene.getStylesheets().add(cssPath);
+        } catch (Exception e) {
+            System.err.println("Error loading CSS: " + e.getMessage());
+        }
+
         stage.setScene(scene);
     }
 
@@ -100,10 +117,10 @@ public class AdminDashboard {
 
         // Create User Section
         VBox createUserSection = new VBox(10);
-        createUserSection.setStyle("-fx-background-color: #f8f9fa; -fx-padding: 15; -fx-border-color: #dee2e6; -fx-border-radius: 5px;");
-        
+        createUserSection.getStyleClass().add("card");
+
         Label createUserLabel = new Label("Create New User");
-        createUserLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        createUserLabel.getStyleClass().add("sub-header-label");
 
         // Create User Form
         GridPane createUserForm = new GridPane();
@@ -113,16 +130,16 @@ public class AdminDashboard {
 
         TextField newUsernameField = new TextField();
         newUsernameField.setPromptText("Enter Username");
-        
+
         PasswordField newPasswordField = new PasswordField();
         newPasswordField.setPromptText("Enter Password");
-        
+
         ComboBox<UserRole> newRoleCombo = new ComboBox<>();
         newRoleCombo.getItems().addAll(UserRole.values());
         newRoleCombo.setValue(UserRole.CUSTOMER);
 
         Button createUserButton = new Button("Create User");
-        createUserButton.setStyle("-fx-background-color: #28a745; -fx-text-fill: white;");
+        createUserButton.getStyleClass().addAll("button", "button-success");
 
         // Add form fields
         int row = 0;
@@ -144,7 +161,8 @@ public class AdminDashboard {
 
             if (username.isEmpty() || password.isEmpty()) {
                 createUserStatusLabel.setText("Please fill in username and password");
-                createUserStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                createUserStatusLabel.getStyleClass().removeAll("status-label-success");
+                createUserStatusLabel.getStyleClass().add("status-label-error");
                 return;
             }
 
@@ -152,36 +170,38 @@ public class AdminDashboard {
                 // Auto-generate user ID based on role
                 IDGeneratorService idGenerator = new IDGeneratorService();
                 String userId = idGenerator.generateUserId(role);
-                
+
                 // Create new user with auto-generated ID
                 User newUser = new User(userId, username, password, role);
-                
+
                 // Save to database
                 if (userDAO.save(newUser)) {
                     createUserStatusLabel.setText(String.format(
-                        "User created successfully! ID: %s, Username: %s, Role: %s", 
-                        userId, username, role
-                    ));
-                    createUserStatusLabel.setStyle("-fx-text-fill: #28a745;");
-                    
+                            "User created successfully! ID: %s, Username: %s, Role: %s",
+                            userId, username, role));
+                    createUserStatusLabel.getStyleClass().removeAll("status-label-error");
+                    createUserStatusLabel.getStyleClass().add("status-label-success");
+
                     // Record audit entry
-                    auditDAO.recordAudit(currentUser.getUserId(), "USER_CREATED", 
-                        String.format("Created user %s (%s) with role %s", username, userId, role));
-                    
+                    auditDAO.recordAudit(currentUser.getUserId(), "USER_CREATED",
+                            String.format("Created user %s (%s) with role %s", username, userId, role));
+
                     // Clear form
                     newUsernameField.clear();
                     newPasswordField.clear();
                     newRoleCombo.setValue(UserRole.CUSTOMER);
-                    
+
                     // Refresh user table
                     refreshUserTable();
                 } else {
                     createUserStatusLabel.setText("Failed to create user");
-                    createUserStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                    createUserStatusLabel.getStyleClass().removeAll("status-label-success");
+                    createUserStatusLabel.getStyleClass().add("status-label-error");
                 }
             } catch (Exception ex) {
                 createUserStatusLabel.setText("Error creating user: " + ex.getMessage());
-                createUserStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                createUserStatusLabel.getStyleClass().removeAll("status-label-success");
+                createUserStatusLabel.getStyleClass().add("status-label-error");
             }
         });
 
@@ -212,13 +232,14 @@ public class AdminDashboard {
         Button changeRoleButton = new Button("Change Role");
         Button resetPasswordButton = new Button("Reset Password");
         Button deleteUserButton = new Button("Delete User");
-        
-        refreshButton.setStyle("-fx-background-color: #17a2b8; -fx-text-fill: white;");
-        changeRoleButton.setStyle("-fx-background-color: #ffc107; -fx-text-fill: black;");
-        resetPasswordButton.setStyle("-fx-background-color: #28a745; -fx-text-fill: white;");
-        deleteUserButton.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white;");
 
-        userManagementButtons.getChildren().addAll(refreshButton, changeRoleButton, resetPasswordButton, deleteUserButton);
+        refreshButton.getStyleClass().addAll("button", "button-secondary");
+        changeRoleButton.getStyleClass().addAll("button", "button-warning");
+        resetPasswordButton.getStyleClass().addAll("button", "button-success");
+        deleteUserButton.getStyleClass().addAll("button", "button-danger");
+
+        userManagementButtons.getChildren().addAll(refreshButton, changeRoleButton, resetPasswordButton,
+                deleteUserButton);
 
         // Status label for user management
         Label userManagementStatusLabel = new Label();
@@ -238,12 +259,13 @@ public class AdminDashboard {
             // Prevent admin from changing their own role
             if (selectedUser.getUserId().equals(currentUser.getUserId())) {
                 userManagementStatusLabel.setText("Cannot change your own role");
-                userManagementStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                userManagementStatusLabel.getStyleClass().removeAll("status-label-success");
+                userManagementStatusLabel.getStyleClass().add("status-label-error");
                 return;
             }
 
-            ChoiceDialog<UserRole> dialog = new ChoiceDialog<>(selectedUser.getRole(), 
-                UserRole.CUSTOMER, UserRole.BANK_EMPLOYEE, UserRole.ADMINISTRATOR);
+            ChoiceDialog<UserRole> dialog = new ChoiceDialog<>(selectedUser.getRole(),
+                    UserRole.CUSTOMER, UserRole.BANK_EMPLOYEE, UserRole.ADMINISTRATOR);
             dialog.setTitle("Change User Role");
             dialog.setHeaderText("Change role for: " + selectedUser.getUsername());
             dialog.setContentText("Select new role:");
@@ -252,18 +274,21 @@ public class AdminDashboard {
                 try {
                     selectedUser.setRole(newRole);
                     if (userDAO.update(selectedUser)) {
-                        userManagementStatusLabel.setText("Role changed successfully for " + selectedUser.getUsername());
-                        userManagementStatusLabel.setStyle("-fx-text-fill: #28a745;");
-                        
+                        userManagementStatusLabel
+                                .setText("Role changed successfully for " + selectedUser.getUsername());
+                        userManagementStatusLabel.getStyleClass().removeAll("status-label-error");
+                        userManagementStatusLabel.getStyleClass().add("status-label-success");
+
                         // Record audit entry
-                        auditDAO.recordAudit(currentUser.getUserId(), "USER_ROLE_CHANGED", 
-                            String.format("Changed role for user %s to %s", selectedUser.getUsername(), newRole));
-                        
+                        auditDAO.recordAudit(currentUser.getUserId(), "USER_ROLE_CHANGED",
+                                String.format("Changed role for user %s to %s", selectedUser.getUsername(), newRole));
+
                         refreshUserTable();
                     }
                 } catch (Exception ex) {
                     userManagementStatusLabel.setText("Error changing role: " + ex.getMessage());
-                    userManagementStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                    userManagementStatusLabel.getStyleClass().removeAll("status-label-success");
+                    userManagementStatusLabel.getStyleClass().add("status-label-error");
                 }
             });
         });
@@ -286,16 +311,19 @@ public class AdminDashboard {
                 try {
                     selectedUser.setPassword(newPassword);
                     if (userDAO.update(selectedUser)) {
-                        userManagementStatusLabel.setText("Password reset successfully for " + selectedUser.getUsername());
-                        userManagementStatusLabel.setStyle("-fx-text-fill: #28a745;");
-                        
+                        userManagementStatusLabel
+                                .setText("Password reset successfully for " + selectedUser.getUsername());
+                        userManagementStatusLabel.getStyleClass().removeAll("status-label-error");
+                        userManagementStatusLabel.getStyleClass().add("status-label-success");
+
                         // Record audit entry
-                        auditDAO.recordAudit(currentUser.getUserId(), "PASSWORD_RESET", 
-                            String.format("Reset password for user %s", selectedUser.getUsername()));
+                        auditDAO.recordAudit(currentUser.getUserId(), "PASSWORD_RESET",
+                                String.format("Reset password for user %s", selectedUser.getUsername()));
                     }
                 } catch (Exception ex) {
                     userManagementStatusLabel.setText("Error resetting password: " + ex.getMessage());
-                    userManagementStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                    userManagementStatusLabel.getStyleClass().removeAll("status-label-success");
+                    userManagementStatusLabel.getStyleClass().add("status-label-error");
                 }
             });
         });
@@ -312,7 +340,8 @@ public class AdminDashboard {
             // Prevent admin from deleting themselves
             if (selectedUser.getUserId().equals(currentUser.getUserId())) {
                 userManagementStatusLabel.setText("Cannot delete your own account");
-                userManagementStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                userManagementStatusLabel.getStyleClass().removeAll("status-label-success");
+                userManagementStatusLabel.getStyleClass().add("status-label-error");
                 return;
             }
 
@@ -325,27 +354,32 @@ public class AdminDashboard {
                 if (response == ButtonType.OK) {
                     try {
                         if (userDAO.delete(selectedUser.getUserId())) {
-                            userManagementStatusLabel.setText("User deleted successfully: " + selectedUser.getUsername());
-                            userManagementStatusLabel.setStyle("-fx-text-fill: #28a745;");
-                            
+                            userManagementStatusLabel
+                                    .setText("User deleted successfully: " + selectedUser.getUsername());
+                            userManagementStatusLabel.getStyleClass().removeAll("status-label-error");
+                            userManagementStatusLabel.getStyleClass().add("status-label-success");
+
                             // Record audit entry
-                            auditDAO.recordAudit(currentUser.getUserId(), "USER_DELETED", 
-                                String.format("Deleted user %s", selectedUser.getUsername()));
-                            
+                            auditDAO.recordAudit(currentUser.getUserId(), "USER_DELETED",
+                                    String.format("Deleted user %s", selectedUser.getUsername()));
+
                             refreshUserTable();
                         } else {
                             userManagementStatusLabel.setText("Failed to delete user");
-                            userManagementStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                            userManagementStatusLabel.getStyleClass().removeAll("status-label-success");
+                            userManagementStatusLabel.getStyleClass().add("status-label-error");
                         }
                     } catch (Exception ex) {
                         userManagementStatusLabel.setText("Error deleting user: " + ex.getMessage());
-                        userManagementStatusLabel.setStyle("-fx-text-fill: #dc3545;");
+                        userManagementStatusLabel.getStyleClass().removeAll("status-label-success");
+                        userManagementStatusLabel.getStyleClass().add("status-label-error");
                     }
                 }
             });
         });
 
-        userTableSection.getChildren().addAll(userTableLabel, userTableView, userManagementButtons, userManagementStatusLabel);
+        userTableSection.getChildren().addAll(userTableLabel, userTableView, userManagementButtons,
+                userManagementStatusLabel);
 
         // Add sections to tab content
         tabContent.getChildren().addAll(titleLabel, createUserSection, userTableSection);
@@ -360,7 +394,7 @@ public class AdminDashboard {
         try {
             List<User> users = userDAO.findAll();
             ObservableList<User> observableList = FXCollections.observableArrayList(users);
-            
+
             if (userTableView != null) {
                 userTableView.setItems(observableList);
                 System.out.println("User table refreshed with " + users.size() + " users");
@@ -382,29 +416,29 @@ public class AdminDashboard {
 
         // Refresh button
         Button refreshButton = new Button("Refresh Audit Trail");
-        refreshButton.setStyle("-fx-background-color: #17a2b8; -fx-text-fill: white;");
+        refreshButton.getStyleClass().addAll("button", "button-secondary");
 
         // Create table for audit entries
         TableView<AuditEntry> auditTable = new TableView<>();
-        
+
         // Define columns
         TableColumn<AuditEntry, String> auditIdCol = new TableColumn<>("Audit ID");
         auditIdCol.setCellValueFactory(new PropertyValueFactory<>("auditId"));
-        
+
         TableColumn<AuditEntry, String> actionCol = new TableColumn<>("Action");
         actionCol.setCellValueFactory(new PropertyValueFactory<>("action"));
-        
+
         TableColumn<AuditEntry, String> timestampCol = new TableColumn<>("Timestamp");
         timestampCol.setCellValueFactory(new PropertyValueFactory<>("timeStamp"));
-        
+
         TableColumn<AuditEntry, String> userIdCol = new TableColumn<>("User ID");
         userIdCol.setCellValueFactory(new PropertyValueFactory<>("userId"));
-        
+
         TableColumn<AuditEntry, String> detailsCol = new TableColumn<>("Details");
         detailsCol.setCellValueFactory(new PropertyValueFactory<>("details"));
-        
+
         auditTable.getColumns().addAll(auditIdCol, actionCol, timestampCol, userIdCol, detailsCol);
-        
+
         // Set column widths
         auditIdCol.setPrefWidth(150);
         actionCol.setPrefWidth(120);
@@ -421,12 +455,14 @@ public class AdminDashboard {
                 List<AuditEntry> auditEntries = auditDAO.findAll();
                 ObservableList<AuditEntry> observableList = FXCollections.observableArrayList(auditEntries);
                 auditTable.setItems(observableList);
-                
+
                 statusLabel.setText("Loaded " + auditEntries.size() + " audit entries");
-                statusLabel.setStyle("-fx-text-fill: #28a745;");
+                statusLabel.getStyleClass().removeAll("status-label-error");
+                statusLabel.getStyleClass().add("status-label-success");
             } catch (Exception ex) {
                 statusLabel.setText("Error loading audit trail: " + ex.getMessage());
-                statusLabel.setStyle("-fx-text-fill: #dc3545;");
+                statusLabel.getStyleClass().removeAll("status-label-success");
+                statusLabel.getStyleClass().add("status-label-error");
             }
         });
 
@@ -446,8 +482,8 @@ public class AdminDashboard {
 
         // System info
         VBox infoBox = new VBox(10);
-        infoBox.setStyle("-fx-background-color: #f8f9fa; -fx-padding: 15; -fx-border-color: #dee2e6; -fx-border-radius: 5px;");
-        
+        infoBox.getStyleClass().add("card");
+
         Label javaVersion = new Label("Java Version: " + System.getProperty("java.version"));
         Label javaFxVersion = new Label("JavaFX Version: 17.0.2");
         Label databaseInfo = new Label("Database: SQLite");
@@ -460,12 +496,12 @@ public class AdminDashboard {
         VBox actionsBox = new VBox(10);
         Label actionsLabel = new Label("System Actions");
         actionsLabel.setStyle("-fx-font-weight: bold;");
-        
+
         Button clearAuditButton = new Button("Clear Old Audit Entries");
         Button backupButton = new Button("Backup Database");
-        
-        clearAuditButton.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white;");
-        backupButton.setStyle("-fx-background-color: #007bff; -fx-text-fill: white;");
+
+        clearAuditButton.getStyleClass().addAll("button", "button-secondary");
+        backupButton.getStyleClass().addAll("button", "button-primary");
 
         actionsBox.getChildren().addAll(actionsLabel, clearAuditButton, backupButton);
 
@@ -478,30 +514,34 @@ public class AdminDashboard {
                 Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
                 confirmation.setTitle("Clear Old Audit Entries");
                 confirmation.setHeaderText("Clear Old Audit Entries");
-                confirmation.setContentText("This will delete audit entries older than 30 days. This action cannot be undone. Continue?");
-                
+                confirmation.setContentText(
+                        "This will delete audit entries older than 30 days. This action cannot be undone. Continue?");
+
                 confirmation.showAndWait().ifPresent(response -> {
                     if (response == ButtonType.OK) {
                         try {
                             // Delete audit entries older than 30 days
                             int deletedCount = auditDAO.deleteOldEntries(30);
-                            
+
                             statusLabel.setText("Successfully deleted " + deletedCount + " old audit entries");
-                            statusLabel.setStyle("-fx-text-fill: #28a745;");
-                            
+                            statusLabel.getStyleClass().removeAll("status-label-error");
+                            statusLabel.getStyleClass().add("status-label-success");
+
                             // Record audit entry for this action
-                            auditDAO.recordAudit(currentUser.getUserId(), "AUDIT_CLEANUP", 
-                                "Cleared " + deletedCount + " old audit entries");
-                            
+                            auditDAO.recordAudit(currentUser.getUserId(), "AUDIT_CLEANUP",
+                                    "Cleared " + deletedCount + " old audit entries");
+
                         } catch (Exception ex) {
                             statusLabel.setText("Error clearing audit entries: " + ex.getMessage());
-                            statusLabel.setStyle("-fx-text-fill: #dc3545;");
+                            statusLabel.getStyleClass().removeAll("status-label-success");
+                            statusLabel.getStyleClass().add("status-label-error");
                         }
                     }
                 });
             } catch (Exception ex) {
                 statusLabel.setText("Error: " + ex.getMessage());
-                statusLabel.setStyle("-fx-text-fill: #dc3545;");
+                statusLabel.getStyleClass().removeAll("status-label-success");
+                statusLabel.getStyleClass().add("status-label-error");
             }
         });
 
@@ -511,10 +551,10 @@ public class AdminDashboard {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Save Database Backup");
                 fileChooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("SQLite Database Files", "*.db", "*.sqlite")
-                );
+                        new FileChooser.ExtensionFilter("SQLite Database Files", "*.db", "*.sqlite"));
 
-                String timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+                String timestamp = java.time.LocalDateTime.now()
+                        .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
                 fileChooser.setInitialFileName("banking_system_backup_" + timestamp + ".db");
 
                 File backupFile = fileChooser.showSaveDialog(stage);
@@ -524,8 +564,8 @@ public class AdminDashboard {
                     if (success) {
                         statusLabel.setText("Backup created successfully: " + backupFile.getAbsolutePath());
                         statusLabel.setStyle("-fx-text-fill: #28a745;");
-                        auditDAO.recordAudit(currentUser.getUserId(), "DATABASE_BACKUP", 
-                            "Created database backup: " + backupFile.getName());
+                        auditDAO.recordAudit(currentUser.getUserId(), "DATABASE_BACKUP",
+                                "Created database backup: " + backupFile.getName());
                     } else {
                         statusLabel.setText("Backup failed");
                         statusLabel.setStyle("-fx-text-fill: #dc3545;");
@@ -548,32 +588,32 @@ public class AdminDashboard {
         try {
             // Get the current database connection to ensure it's initialized
             database.DatabaseConnection.getConnection();
-            
+
             // Close the connection temporarily to allow backup
             database.DatabaseConnection.closeConnection();
-            
+
             // Get the source database file path from DatabaseConnection
             String sourceDbPath = database.DatabaseConnection.getDbFilePath();
             File sourceDbFile = new File(sourceDbPath);
-            
+
             if (!sourceDbFile.exists()) {
                 throw new RuntimeException("Source database file not found: " + sourceDbPath);
             }
-            
+
             // Copy the database file
             try (InputStream in = new FileInputStream(sourceDbFile);
-                OutputStream out = new FileOutputStream(backupFile)) {
-                
+                    OutputStream out = new FileOutputStream(backupFile)) {
+
                 byte[] buffer = new byte[8192];
                 int bytesRead;
                 while ((bytesRead = in.read(buffer)) != -1) {
                     out.write(buffer, 0, bytesRead);
                 }
             }
-            
+
             // Reinitialize the database connection
             database.DatabaseConnection.initializeDatabase();
-            
+
             return true;
         } catch (Exception ex) {
             // Ensure connection is reinitialized even if backup fails

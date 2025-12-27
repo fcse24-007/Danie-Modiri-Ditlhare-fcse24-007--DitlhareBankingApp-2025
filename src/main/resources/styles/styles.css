@@ -1,0 +1,201 @@
+/* Global Variables (simulated as we can't use real variables in JavaFX 8css without preprocessor, but we use consistent values) */
+/* Colors:
+   Primary: #4f46e5
+   Secondary: #6b7280
+   Success: #10b981
+   Danger: #ef4444
+   Warning: #f59e0b
+   Background: #f3f4f6
+   Surface: #ffffff
+   Text: #1f2937
+*/
+
+.root {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 12px;
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #1f2937;
+}
+
+/* Headers */
+.header-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+    -fx-padding: 0 0 10 0;
+}
+
+.sub-header-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #374151;
+}
+
+/* Containers */
+.card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 4);
+    -fx-padding: 20;
+}
+
+.main-container {
+    -fx-padding: 20;
+    -fx-spacing: 20;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: #4f46e5;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #4338ca;
+    -fx-effect: dropshadow(three-pass-box, rgba(79, 70, 229, 0.4), 8, 0, 0, 2);
+}
+
+.button:pressed {
+    -fx-background-color: #3730a3;
+}
+
+.button-secondary {
+    -fx-background-color: #6b7280;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #4b5563;
+}
+
+.button-success {
+    -fx-background-color: #10b981;
+}
+
+.button-success:hover {
+    -fx-background-color: #059669;
+}
+
+.button-danger {
+    -fx-background-color: #ef4444;
+}
+
+.button-danger:hover {
+    -fx-background-color: #dc2626;
+}
+
+.button-warning {
+    -fx-background-color: #f59e0b;
+    -fx-text-fill: white;
+}
+
+.button-warning:hover {
+    -fx-background-color: #d97706;
+}
+
+/* Text Fields */
+.text-field,
+.password-field,
+.combo-box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8;
+}
+
+.text-field:focused,
+.password-field:focused,
+.combo-box:focused {
+    -fx-border-color: #4f46e5;
+    -fx-effect: dropshadow(three-pass-box, rgba(79, 70, 229, 0.2), 4, 0, 0, 0);
+}
+
+/* TabPane */
+.tab-pane {
+    -fx-tab-min-height: 40px;
+}
+
+.tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.tab {
+    -fx-background-color: #e5e7eb;
+    -fx-background-insets: 0 1 0 0;
+    -fx-background-radius: 6 6 0 0;
+    -fx-padding: 0 20;
+}
+
+.tab:selected {
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+    -fx-background-radius: 6 6 0 0;
+}
+
+.tab-label {
+    -fx-text-fill: #4b5563;
+    -fx-font-weight: bold;
+}
+
+.tab:selected .tab-label {
+    -fx-text-fill: #4f46e5;
+}
+
+/* TableView */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-table-cell-border-color: transparent;
+    -fx-shape: null;
+    /* Remove default border */
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+}
+
+.table-view .table-column {
+    -fx-alignment: CENTER-LEFT;
+}
+
+.table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #f3f4f6;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f9fafb;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #e0e7ff;
+    -fx-text-fill: #1e1b4b;
+}
+
+/* Status Labels */
+.status-label-success {
+    -fx-text-fill: #10b981;
+    -fx-font-weight: bold;
+}
+
+.status-label-error {
+    -fx-text-fill: #ef4444;
+    -fx-font-weight: bold;
+}
+
+/* Animations */
+.fade-in {
+    /* JavaFX CSS doesn't support keyframe animations directly like CSS3, will handle in Java */
+}

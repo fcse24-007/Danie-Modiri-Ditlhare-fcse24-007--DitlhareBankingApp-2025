@@ -12,10 +12,19 @@ public class User {
     private boolean loggedIn;
 
     public User(String userId, String username, String password, UserRole role) {
+        this(userId, username, password, role, false);
+    }
+
+    public User(String userId, String username, String password, UserRole role, boolean isHashed) {
         setUserId(userId);
         setUsername(username);
-        setPassword(password);
         setRole(role);
+
+        if (isHashed) {
+            this.password = password;
+        } else {
+            setPassword(password);
+        }
         loggedIn = false;
     }
 
@@ -88,16 +97,16 @@ public class User {
             this.password = Passwords.hashPassword(generateTemporaryPassword());
             return;
         }
-        
+
         if (password.length() < 8) {
             throw new IllegalArgumentException("Password must be at least 8 characters long");
         }
-    
+
         if (!Passwords.isStrongPassword(password)) {
             throw new IllegalArgumentException(
-                "Password must contain uppercase, lowercase, digit, and special character");
+                    "Password must contain uppercase, lowercase, digit, and special character");
         }
-    
+
         this.password = Passwords.hashPassword(password);
     }
 

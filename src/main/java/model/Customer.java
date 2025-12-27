@@ -1,4 +1,5 @@
 package model;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,9 +15,16 @@ public class Customer extends User implements Auditable {
     private List<AuditEntry> auditTrail;
 
     public Customer(String userId, String username, String password,
-                    String customerId, String firstName, String surname, String address,
-                    String phoneNumber, String email, CustomerType customerType) {
-        super(userId, username, password, UserRole.CUSTOMER);
+            String customerId, String firstName, String surname, String address,
+            String phoneNumber, String email, CustomerType customerType) {
+        this(userId, username, password, customerId, firstName, surname, address, phoneNumber, email, customerType,
+                false);
+    }
+
+    public Customer(String userId, String username, String password,
+            String customerId, String firstName, String surname, String address,
+            String phoneNumber, String email, CustomerType customerType, boolean isHashed) {
+        super(userId, username, password, UserRole.CUSTOMER, isHashed);
         setCustomerId(customerId);
         setFirstName(firstName);
         setSurname(surname);
@@ -28,14 +36,14 @@ public class Customer extends User implements Auditable {
         this.auditTrail = new ArrayList<>();
     }
 
-    public void updateProfile(String firstName, String surname, String address, 
-                             String phoneNumber, String email) {
+    public void updateProfile(String firstName, String surname, String address,
+            String phoneNumber, String email) {
         setFirstName(firstName);
         setSurname(surname);
         setAddress(address);
         setPhoneNumber(phoneNumber);
         setEmail(email);
-        
+
         recordAudit(Action.PROFILE_UPDATED, "Customer profile updated");
     }
 
@@ -48,8 +56,8 @@ public class Customer extends User implements Auditable {
             throw new IllegalArgumentException("Account cannot be null");
         }
         accounts.add(account);
-        recordAudit(Action.ACCOUNT_CREATED, 
-            String.format("Account %s added to customer", account.getAccountNumber()));
+        recordAudit(Action.ACCOUNT_CREATED,
+                String.format("Account %s added to customer", account.getAccountNumber()));
     }
 
     public List<Account> getAccounts() {
@@ -59,12 +67,11 @@ public class Customer extends User implements Auditable {
     @Override
     public void recordAudit(Action action, String details) {
         AuditEntry auditEntry = new AuditEntry(
-            "AUDIT_" + System.currentTimeMillis() + "_" + auditTrail.size(),
-            action.toString(),
-            java.time.LocalDateTime.now(),
-            getUserId(),
-            details
-        );
+                "AUDIT_" + System.currentTimeMillis() + "_" + auditTrail.size(),
+                action.toString(),
+                java.time.LocalDateTime.now(),
+                getUserId(),
+                details);
         auditTrail.add(auditEntry);
     }
 
