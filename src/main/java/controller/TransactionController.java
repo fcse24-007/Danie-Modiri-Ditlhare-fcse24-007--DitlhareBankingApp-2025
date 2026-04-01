@@ -17,13 +17,14 @@ public class TransactionController implements TransactionProcessing {
     }
 
     public DepositResult processDeposit(String accountNumber, double amount, String userId) {
-        System.out.println("TransactionController: Processing deposit for account " + accountNumber + ", amount: " + amount);
-        
-        // Step 2: Validate input 
-        if (!validateInput(accountNumber, amount)) {
-            System.out.println("TransactionController: Input validation failed");
-            return new DepositResult(false, 0, "Invalid input parameters", "");
+        if (accountNumber == null || accountNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Account number cannot be null or empty");
         }
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be positive");
+        }
+
+        System.out.println("TransactionController: Processing deposit for account " + accountNumber + ", amount: " + amount);
 
         try {
             // Step 4-5: Get account
@@ -81,26 +82,38 @@ public class TransactionController implements TransactionProcessing {
         }
     }
 
-    private boolean validateInput(String accountNumber, double amount) {
-        return accountNumber != null && !accountNumber.trim().isEmpty() && amount > 0;
-    }
-
     @Override
     public void processDeposit(Account account, double amount) {
-        processDeposit(account.getAccountNumber(), amount, "SYSTEM");
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null");
+        }
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be positive");
+        }
+        // Apply deposit to the provided in-memory account first for responsive UX
+        synchronized (account) {
+            double startingBalance = account.getBalance();
+            account.deposit(amount);
+            try {
+                accountDAO.updateBalance(account.getAccountNumber(), account.getBalance());
+            } catch (Exception ex) {
+                account.setBalance(startingBalance);
+                throw new IllegalStateException("Unable to persist deposit for " + account.getAccountNumber(), ex);
+            }
+        }
     }
 
     @Override
     public void processWithdrawal(Account account, double amount) {
-        System.out.println("TransactionController: Processing withdrawal for account " + 
-                          account.getAccountNumber() + ", amount: " + amount);
-        
         if (account == null) {
             throw new IllegalArgumentException("Account cannot be null");
         }
         if (amount <= 0) {
             throw new IllegalArgumentException("Withdrawal amount must be positive");
         }
+
+        System.out.println("TransactionController: Processing withdrawal for account " + 
+                          account.getAccountNumber() + ", amount: " + amount);
         
         account.withdraw(amount);
         accountDAO.updateBalance(account.getAccountNumber(), account.getBalance());
@@ -121,13 +134,16 @@ public class TransactionController implements TransactionProcessing {
 
     @Override
     public void transferFunds(Account fromAccount, Account toAccount, double amount) {
-        System.out.println("TransactionController: Processing transfer from " + 
-                          fromAccount.getAccountNumber() + " to " + toAccount.getAccountNumber() + 
-                          ", amount: " + amount);
-        
         if (fromAccount == null || toAccount == null) {
             throw new IllegalArgumentException("Both accounts must be specified");
         }
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Transfer amount must be positive");
+        }
+
+        System.out.println("TransactionController: Processing transfer from " + 
+                          fromAccount.getAccountNumber() + " to " + toAccount.getAccountNumber() + 
+                          ", amount: " + amount);
         
         fromAccount.transferTo(toAccount, amount);
         

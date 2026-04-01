@@ -13,8 +13,39 @@
 .root {
     -fx-font-family: 'Segoe UI', sans-serif;
     -fx-font-size: 12px;
-    -fx-background-color: #f3f4f6;
+    -fx-background-color: linear-gradient(120deg, #eef2ff 0%, #f8fafc 100%);
     -fx-text-fill: #1f2937;
+}
+
+.login-wrapper {
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+    -fx-background-radius: 16px;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 18, 0, 0, 8);
+}
+
+.info-panel {
+    -fx-padding: 16 24 16 16;
+    -fx-spacing: 8;
+    -fx-max-width: 320px;
+}
+
+.bullet-text {
+    -fx-text-fill: #4b5563;
+    -fx-font-size: 12.5px;
+}
+
+.muted-text {
+    -fx-text-fill: #6b7280;
+}
+
+.input-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #374151;
+}
+
+.login-card {
+    -fx-min-width: 340px;
 }
 
 /* Headers */
@@ -193,6 +224,11 @@
 .status-label-error {
     -fx-text-fill: #ef4444;
     -fx-font-weight: bold;
+}
+
+.status-label {
+    -fx-text-fill: #4b5563;
+    -fx-font-size: 12px;
 }
 
 /* Animations */
