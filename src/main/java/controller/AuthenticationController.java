@@ -11,8 +11,9 @@ public class AuthenticationController {
     private UserDAO userDAO;
     private AuditDAO auditDAO;
     private User currentUser;
-    private static final int MAX_ATTEMPTS = 5;
-    private static final long LOCKOUT_MILLIS = TimeUnit.SECONDS.toMillis(45);
+    private static final int MAX_ATTEMPTS = getIntProperty("auth.maxAttempts", 5);
+    private static final long LOCKOUT_MILLIS = TimeUnit.SECONDS.toMillis(
+            getLongProperty("auth.lockoutSeconds", 45));
     private final Map<String, LoginAttempt> attemptTracker = new ConcurrentHashMap<>();
 
     public AuthenticationController() {
@@ -28,6 +29,11 @@ public class AuthenticationController {
         // Check lockout state before hitting the database
         LoginAttempt attempt = attemptTracker.getOrDefault(key, new LoginAttempt());
         long now = System.currentTimeMillis();
+        if (attempt.lockoutUntil > 0 && attempt.lockoutUntil <= now) {
+            attempt.failures = 0;
+            attempt.lockoutUntil = 0;
+            attemptTracker.remove(key);
+        }
         if (attempt.lockoutUntil > now) {
             long secondsLeft = TimeUnit.MILLISECONDS.toSeconds(attempt.lockoutUntil - now) + 1;
             return new LoginResult(false, null,
@@ -116,5 +122,21 @@ public class AuthenticationController {
     private static class LoginAttempt {
         int failures = 0;
         long lockoutUntil = 0L;
+    }
+
+    private static int getIntProperty(String key, int defaultValue) {
+        try {
+            return Integer.parseInt(System.getProperty(key));
+        } catch (Exception ex) {
+            return defaultValue;
+        }
+    }
+
+    private static long getLongProperty(String key, long defaultValue) {
+        try {
+            return Long.parseLong(System.getProperty(key));
+        } catch (Exception ex) {
+            return defaultValue;
+        }
     }
 }

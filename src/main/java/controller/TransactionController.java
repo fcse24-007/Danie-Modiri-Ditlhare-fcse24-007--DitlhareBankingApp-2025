@@ -91,13 +91,15 @@ public class TransactionController implements TransactionProcessing {
             throw new IllegalArgumentException("Deposit amount must be positive");
         }
         // Apply deposit to the provided in-memory account first for responsive UX
-        double startingBalance = account.getBalance();
-        account.deposit(amount);
-        try {
-            accountDAO.updateBalance(account.getAccountNumber(), account.getBalance());
-        } catch (Exception ex) {
-            account.setBalance(startingBalance);
-            throw new IllegalStateException("Unable to persist deposit for " + account.getAccountNumber(), ex);
+        synchronized (account) {
+            double startingBalance = account.getBalance();
+            account.deposit(amount);
+            try {
+                accountDAO.updateBalance(account.getAccountNumber(), account.getBalance());
+            } catch (Exception ex) {
+                account.setBalance(startingBalance);
+                throw new IllegalStateException("Unable to persist deposit for " + account.getAccountNumber(), ex);
+            }
         }
     }
 
