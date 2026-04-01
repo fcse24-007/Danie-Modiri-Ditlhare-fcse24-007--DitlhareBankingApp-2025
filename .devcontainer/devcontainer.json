@@ -1,34 +1,29 @@
 {
-	"name": "Java with JavaFX",
-	"image": "mcr.microsoft.com/devcontainers/java:1-17-bookworm",
+    "name": "Java with JavaFX",
+    "image": "mcr.microsoft.com/devcontainers/java:17-bullseye",
 
-	"features": {
-		"ghcr.io/devcontainers/features/java:1": {
-			"version": "none",
-			"installMaven": "true",
-			"installGradle": "false"
-		},
-		"ghcr.io/warrenbuckley/codespace-features/sqlite:1": {},
-		"ghcr.io/devcontainers/features/desktop-lite:1": {}
-	},
+    "features": {
+        "ghcr.io/devcontainers/features/java:1": {
+            "version": "none",
+            "installMaven": "true",
+            "installGradle": "false"
+        }
+    },
 
-	// Forward ports for GUI
-	"forwardPorts": [6080, 5901],
+    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libgtk-3-dev libxtst6 libxrender1 libfontconfig1 libxi6 && java -version && mvn -version",
 
-	// Use sudo for apt commands and fix package names
-	"postCreateCommand": "sudo apt-get update && sudo apt-get install -y libgtk-3-dev libxtst6 libxrender1 libfontconfig1 libxi6 && java -version",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "java.configuration.updateBuildConfiguration": "automatic",
+                "java.jdt.ls.vmargs": "-Xmx2G -Xms100m"
+            },
+            "extensions": [
+                "vscjava.vscode-java-pack",
+                "vscjava.vscode-maven"
+            ]
+        }
+    },
 
-	"customizations": {
-		"vscode": {
-			"settings": {
-				"java.configuration.updateBuildConfiguration": "automatic"
-			},
-			"extensions": [
-				"vscjava.vscode-java-pack",
-				"openjfx.javafx-pack"
-			]
-		}
-	},
-
-	"remoteUser": "vscode"
+    "remoteUser": "vscode"
 }
