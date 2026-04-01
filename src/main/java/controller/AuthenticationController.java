@@ -67,7 +67,7 @@ public class AuthenticationController {
         attemptTracker.put(key, attempt);
         String message = attempt.lockoutUntil > now
                 ? "Too many failed attempts. Please wait before retrying."
-                : String.format("Invalid username or password (%d/%d)", attempt.failures, MAX_ATTEMPTS);
+                : "Invalid username or password";
         
         System.out.println("AuthenticationController: Login FAILED for " + username);
         

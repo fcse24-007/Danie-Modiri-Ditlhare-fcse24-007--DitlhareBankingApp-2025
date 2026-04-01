@@ -137,7 +137,6 @@ public class LoginView {
                                 || loadingIndicator.isVisible(),
                         usernameField.textProperty(),
                         passwordField.textProperty(),
-                        visiblePasswordField.textProperty(),
                         loadingIndicator.visibleProperty()));
 
         formContainer.getChildren().addAll(
@@ -259,7 +258,7 @@ public class LoginView {
         alert.setHeaderText("Can't sign in?");
         alert.setContentText(
                 "For security, password resets are handled by administrators.\n"
-                        + "If you are locked out, wait for the cooldown or contact an admin for a temporary Argon2 reset.");
+                        + "If you are locked out, wait for the cooldown or contact an admin for a temporary password reset.");
         alert.showAndWait();
     }
 
