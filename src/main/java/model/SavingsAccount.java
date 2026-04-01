@@ -10,7 +10,10 @@ public class SavingsAccount extends Account implements InterestBearing {
     public SavingsAccount(String accountNumber, double balance, LocalDate dateCreated,
                           LocalDate dateOpened, Customer customer, AccountStatus status) {
         super(accountNumber, balance, dateCreated, dateOpened, customer, status);
-        this.lastInterestApplied = dateOpened;
+        // Start accrual from the earliest known lifecycle date so interest is not
+        // skipped for long-lived accounts.
+        LocalDate anchor = dateCreated != null ? dateCreated : dateOpened;
+        this.lastInterestApplied = anchor != null ? anchor : LocalDate.now();
     }
 
     @Override

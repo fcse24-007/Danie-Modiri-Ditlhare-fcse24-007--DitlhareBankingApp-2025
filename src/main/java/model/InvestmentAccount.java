@@ -11,7 +11,8 @@ public class InvestmentAccount extends Account implements InterestBearing {
     public InvestmentAccount(String accountNumber, double balance, LocalDate dateCreated,
                              LocalDate dateOpened, Customer customer, AccountStatus status) {
         super(accountNumber, balance, dateCreated, dateOpened, customer, status);
-        this.lastInterestApplied = dateOpened;
+        LocalDate anchor = dateCreated != null ? dateCreated : dateOpened;
+        this.lastInterestApplied = anchor != null ? anchor : LocalDate.now();
     }
 
     @Override
@@ -67,7 +68,8 @@ public class InvestmentAccount extends Account implements InterestBearing {
                     MINIMUM_BALANCE));
         }
         
-        if (ChronoUnit.DAYS.between(getDateOpened(), LocalDate.now()) < 30) {
+        LocalDate noticeAnchor = getDateCreated() != null ? getDateCreated() : getDateOpened();
+        if (noticeAnchor == null || ChronoUnit.DAYS.between(noticeAnchor, LocalDate.now()) < 30) {
             throw new IllegalArgumentException(
                 "Investment accounts require 30-day notice for withdrawals");
         }

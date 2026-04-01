@@ -5,6 +5,7 @@ import model.User;
 import model.UserRole;
 
 import controller.AuthenticationController;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -19,8 +20,12 @@ public class LoginView {
     private AuthenticationController authController;
     private TextField usernameField;
     private PasswordField passwordField;
+    private TextField visiblePasswordField;
+    private CheckBox showPasswordCheck;
     private Button loginButton;
     private Label statusLabel;
+    private ProgressIndicator loadingIndicator;
+    private Label helperLabel;
 
     public LoginView() {
         this.stage = new Stage();
@@ -31,63 +36,127 @@ public class LoginView {
     private void initializeUI() {
         stage.setTitle("Banking System - Login");
 
-        // Main container
-        VBox mainContainer = new VBox(20);
-        mainContainer.setAlignment(Pos.CENTER);
-        mainContainer.getStyleClass().add("root");
-        mainContainer.setPadding(new Insets(40));
+        BorderPane root = new BorderPane();
+        root.getStyleClass().add("root");
 
-        // Header
-        Label headerLabel = new Label("Banking System");
-        headerLabel.getStyleClass().add("header-label");
+        HBox wrapper = new HBox(32);
+        wrapper.setAlignment(Pos.CENTER);
+        wrapper.setPadding(new Insets(40));
+        wrapper.getStyleClass().add("login-wrapper");
+
+        // Informational panel
+        VBox infoPanel = new VBox(10);
+        infoPanel.getStyleClass().add("info-panel");
+        Label appLabel = new Label("Ditlhare Banking");
+        appLabel.getStyleClass().add("header-label");
+        Label taglineLabel = new Label("Secure, modern banking for customers, employees, and administrators.");
+        taglineLabel.getStyleClass().add("muted-text");
+        Label bullet1 = new Label("• Argon2 password security & audit trails");
+        bullet1.getStyleClass().add("bullet-text");
+        Label bullet2 = new Label("• Role-based dashboards & quick navigation");
+        bullet2.getStyleClass().add("bullet-text");
+        Label bullet3 = new Label("• Activity monitored with smart lockout protection");
+        bullet3.getStyleClass().add("bullet-text");
+        infoPanel.getChildren().addAll(appLabel, taglineLabel, bullet1, bullet2, bullet3);
 
         // Login form container
         VBox formContainer = new VBox(15);
         formContainer.setPadding(new Insets(30));
         formContainer.setAlignment(Pos.CENTER);
-        formContainer.getStyleClass().add("card");
-        formContainer.setMaxWidth(400);
+        formContainer.getStyleClass().addAll("card", "login-card");
+        formContainer.setMaxWidth(420);
+
+        Label welcomeLabel = new Label("Welcome back");
+        welcomeLabel.getStyleClass().add("sub-header-label");
 
         // Username field
         VBox usernameBox = new VBox(5);
-        Label usernameLabel = new Label("Username:");
-        usernameLabel.setStyle("-fx-font-weight: bold;");
+        Label usernameLabel = new Label("Username");
+        usernameLabel.getStyleClass().add("input-label");
         usernameField = new TextField();
         usernameField.setPromptText("Enter your username");
         usernameField.getStyleClass().add("text-field");
         usernameBox.getChildren().addAll(usernameLabel, usernameField);
 
-        // Password field
+        // Password field with toggle
         VBox passwordBox = new VBox(5);
-        Label passwordLabel = new Label("Password:");
-        passwordLabel.setStyle("-fx-font-weight: bold;");
+        Label passwordLabel = new Label("Password");
+        passwordLabel.getStyleClass().add("input-label");
         passwordField = new PasswordField();
         passwordField.setPromptText("Enter your password");
         passwordField.getStyleClass().add("password-field");
-        passwordBox.getChildren().addAll(passwordLabel, passwordField);
 
-        // Login button
+        visiblePasswordField = new TextField();
+        visiblePasswordField.setPromptText("Enter your password");
+        visiblePasswordField.getStyleClass().add("password-field");
+        visiblePasswordField.setManaged(false);
+        visiblePasswordField.setVisible(false);
+        visiblePasswordField.textProperty().bindBidirectional(passwordField.textProperty());
+
+        showPasswordCheck = new CheckBox("Show password");
+        showPasswordCheck.getStyleClass().add("muted-text");
+        showPasswordCheck.setOnAction(e -> {
+            boolean show = showPasswordCheck.isSelected();
+            passwordField.setManaged(!show);
+            passwordField.setVisible(!show);
+            visiblePasswordField.setManaged(show);
+            visiblePasswordField.setVisible(show);
+        });
+
+        VBox passwordFieldHolder = new VBox(6, passwordField, visiblePasswordField, showPasswordCheck);
+        passwordBox.getChildren().addAll(passwordLabel, passwordFieldHolder);
+
+        // Action row
         loginButton = new Button("Login");
         loginButton.getStyleClass().add("button");
-        loginButton.setPrefWidth(120);
-        loginButton.setPrefHeight(40);
+        loginButton.setPrefWidth(150);
+        loginButton.setPrefHeight(42);
 
-        // Status label
+        loadingIndicator = new ProgressIndicator();
+        loadingIndicator.setVisible(false);
+        loadingIndicator.setPrefSize(28, 28);
+
+        HBox actionRow = new HBox(10, loginButton, loadingIndicator);
+        actionRow.setAlignment(Pos.CENTER_LEFT);
+
+        // Helper + status
+        helperLabel = new Label("Tip: Use your assigned username. Accounts lock after repeated failures.");
+        helperLabel.getStyleClass().add("muted-text");
         statusLabel = new Label();
         statusLabel.setWrapText(true);
+        statusLabel.getStyleClass().add("status-label");
 
-        // Add components to form
+        Hyperlink forgotPasswordLink = new Hyperlink("Forgot password?");
+        forgotPasswordLink.setOnAction(e -> showForgotPasswordHelp());
+
+        // Disable login until fields are populated or while loading
+        loginButton.disableProperty().bind(
+                Bindings.createBooleanBinding(
+                        () -> usernameField.getText().trim().isEmpty()
+                                || passwordField.getText().trim().isEmpty()
+                                || loadingIndicator.isVisible(),
+                        usernameField.textProperty(),
+                        passwordField.textProperty(),
+                        visiblePasswordField.textProperty(),
+                        loadingIndicator.visibleProperty()));
+
         formContainer.getChildren().addAll(
-                usernameBox, passwordBox, loginButton, statusLabel);
+                welcomeLabel,
+                usernameBox,
+                passwordBox,
+                actionRow,
+                forgotPasswordLink,
+                helperLabel,
+                statusLabel);
 
-        // Add to main container
-        mainContainer.getChildren().addAll(headerLabel, formContainer);
+        wrapper.getChildren().addAll(infoPanel, formContainer);
+        root.setCenter(wrapper);
 
         // Set up event handlers
         setupEventHandlers();
 
         // Create scene and show stage
-        Scene scene = new Scene(mainContainer, 500, 500);
+        Scene scene = new Scene(root, 900, 520);
 
         // Load CSS
         try {
@@ -101,7 +170,7 @@ public class LoginView {
         stage.setResizable(false);
 
         // Add Fade In Animation
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(800), mainContainer);
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(800), root);
         fadeOut.setFromValue(0);
         fadeOut.setToValue(1);
         fadeOut.play();
@@ -114,6 +183,7 @@ public class LoginView {
         // Enter key support
         usernameField.setOnAction(e -> login());
         passwordField.setOnAction(e -> login());
+        visiblePasswordField.setOnAction(e -> login());
     }
 
     /**
@@ -125,10 +195,11 @@ public class LoginView {
      */
     private void login() {
         String username = usernameField.getText().trim();
-        String password = passwordField.getText();
+        String password = getPasswordInput();
 
         // Clear previous status
         statusLabel.setText("");
+        statusLabel.getStyleClass().removeAll("status-label-success", "status-label-error");
 
         // Validate input
         if (username.isEmpty() || password.isEmpty()) {
@@ -137,7 +208,7 @@ public class LoginView {
         }
 
         // Show loading state
-        loginButton.setDisable(true);
+        loadingIndicator.setVisible(true);
         loginButton.setText("Logging in...");
 
         // Perform login (this would typically be in a background thread)
@@ -148,7 +219,7 @@ public class LoginView {
 
                 // Update UI on JavaFX Application Thread
                 javafx.application.Platform.runLater(() -> {
-                    loginButton.setDisable(false);
+                    loadingIndicator.setVisible(false);
                     loginButton.setText("Login");
 
                     if (result.isSuccess()) {
@@ -168,7 +239,7 @@ public class LoginView {
                 });
             } catch (Exception e) {
                 javafx.application.Platform.runLater(() -> {
-                    loginButton.setDisable(false);
+                    loadingIndicator.setVisible(false);
                     loginButton.setText("Login");
                     statusLabel.setText("Login failed: " + e.getMessage());
                     statusLabel.getStyleClass().removeAll("status-label-success");
@@ -176,6 +247,20 @@ public class LoginView {
                 });
             }
         }).start();
+    }
+
+    private String getPasswordInput() {
+        return showPasswordCheck.isSelected() ? visiblePasswordField.getText() : passwordField.getText();
+    }
+
+    private void showForgotPasswordHelp() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Password assistance");
+        alert.setHeaderText("Can't sign in?");
+        alert.setContentText(
+                "For security, password resets are handled by administrators.\n"
+                        + "If you are locked out, wait for the cooldown or contact an admin for a temporary Argon2 reset.");
+        alert.showAndWait();
     }
 
     private void showDashboard(UserRole role, User user) {
