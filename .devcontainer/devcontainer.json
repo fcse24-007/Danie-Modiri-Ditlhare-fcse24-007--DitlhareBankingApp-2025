@@ -7,10 +7,16 @@
             "version": "none",
             "installMaven": "true",
             "installGradle": "false"
+        },
+        "ghcr.io/devcontainers/features/desktop-lite:1": {
+            "password": "password",
+            "webPort": "6080"
         }
     },
 
-    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libgtk-3-dev libxtst6 libxrender1 libfontconfig1 libxi6 && java -version && mvn -version",
+    "forwardPorts": [6080],
+
+    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libgtk-3-dev libxtst6 libxrender1 libfontconfig1 libxi6 openjfx && java -version && mvn -version",
 
     "customizations": {
         "vscode": {
